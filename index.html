@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>派車GAI數據管理系統</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 頂部導航 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-truck"></i>
+            <h1>派車GAI數據管理系統</h1>
+        </div>
+        <div class="nav-user">
+            <span id="currentUser">管理員</span>
+            <button id="logoutBtn" class="btn-logout">登出</button>
+        </div>
+    </nav>
+
+    <!-- 側邊選單 -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="menu-list">
+            <li class="menu-item active" data-page="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>主控台</span>
+            </li>
+            <li class="menu-item" data-page="route-management">
+                <i class="fas fa-route"></i>
+                <span>路線管理</span>
+            </li>
+            <li class="menu-item" data-page="route-optimization">
+                <i class="fas fa-brain"></i>
+                <span>AI路線優化</span>
+            </li>
+            <li class="menu-item" data-page="seasonal-routes">
+                <i class="fas fa-calendar-alt"></i>
+                <span>季節性路線</span>
+            </li>
+            <li class="menu-item" data-page="cargo-vehicle">
+                <i class="fas fa-boxes"></i>
+                <span>載運管理</span>
+            </li>
+            <li class="menu-item" data-page="real-time-monitor">
+                <i class="fas fa-satellite-dish"></i>
+                <span>即時監控</span>
+            </li>
+            <li class="menu-item" data-page="system-settings">
+                <i class="fas fa-cog"></i>
+                <span>系統設定</span>
+            </li>
+            <li class="menu-item" data-page="reports">
+                <i class="fas fa-chart-bar"></i>
+                <span>報表分析</span>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- 主要內容區 -->
+    <main class="main-content" id="mainContent">
+        <!-- 主控台頁面 -->
+        <div id="dashboard" class="page active">
+            <div class="page-header">
+                <h2><i class="fas fa-tachometer-alt"></i> 主控台</h2>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="refreshDashboard">
+                        <i class="fas fa-sync-alt"></i> 重新整理
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 即時監控面板 -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>今日配送狀況</h3>
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-number" id="todayDeliveries">0</div>
+                        <div class="stat-label">已完成配送</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>車輛使用率</h3>
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-number" id="vehicleUsage">0%</div>
+                        <div class="stat-label">使用中車輛</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>準時率</h3>
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-number" id="onTimeRate">0%</div>
+                        <div class="stat-label">準時配送率</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>異常警示</h3>
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-number alert" id="alertCount">0</div>
+                        <div class="stat-label">待處理異常</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快速操作區 -->
+            <div class="quick-actions">
+                <h3>快速操作</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-danger" id="emergencyDispatch">
+                        <i class="fas fa-ambulance"></i> 緊急調派
+                    </button>
+                    <button class="btn btn-warning" id="rerouteAll">
+                        <i class="fas fa-route"></i> 路線重規劃
+                    </button>
+                    <button class="btn btn-info" id="realTimeReroute">
+                        <i class="fas fa-directions"></i> 即時改道
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 路線管理頁面 -->
+        <div id="route-management" class="page">
+            <div class="page-header">
+                <h2><i class="fas fa-route"></i> 路線管理</h2>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="addRoute">
+                        <i class="fas fa-plus"></i> 新增路線
+                    </button>
+                    <button class="btn btn-secondary" id="importRoutes">
+                        <i class="fas fa-upload"></i> 批量匯入
+                    </button>
+                </div>
+            </div>
+
+            <!-- 搜尋與篩選 -->
+            <div class="filter-section">
+                <div class="filter-group">
+                    <input type="text" id="routeSearch" placeholder="搜尋路線..." class="form-input">
+                    <select id="regionFilter" class="form-select">
+                        <option value="">全部區域</option>
+                        <option value="north">北部</option>
+                        <option value="central">中部</option>
+                        <option value="south">南部</option>
+                        <option value="east">東部</option>
+                    </select>
+                    <button class="btn btn-primary" id="searchRoutes">
+                        <i class="fas fa-search"></i> 搜尋
+                    </button>
+                </div>
+            </div>
+
+            <!-- 路線列表 -->
+            <div class="table-container">
+                <table class="data-table" id="routeTable">
+                    <thead>
+                        <tr>
+                            <th>路線編號</th>
+                            <th>路線名稱</th>
+                            <th>起點</th>
+                            <th>終點</th>
+                            <th>收送點數量</th>
+                            <th>預估時間</th>
+                            <th>狀態</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="routeTableBody">
+                        <!-- 動態載入資料 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- AI路線優化頁面 -->
+        <div id="route-optimization" class="page">
+            <div class="page-header">
+                <h2><i class="fas fa-brain"></i> AI路線優化</h2>
+            </div>
+
+            <div class="optimization-container">
+                <!-- 優化參數設定 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>優化參數設定</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>優化目標：</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="optimizeTarget" value="time" checked> 最短時間</label>
+                                <label><input type="radio" name="optimizeTarget" value="distance"> 最短距離</label>
+                                <label><input type="radio" name="optimizeTarget" value="cost"> 最低成本</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>車輛限制：</label>
+                            <input type="number" id="vehicleLimit" class="form-input" placeholder="最大車輛數">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>時間窗口：</label>
+                            <input type="time" id="startTime" class="form-input">
+                            <span>至</span>
+                            <input type="time" id="endTime" class="form-input">
+                        </div>
+                        
+                        <button class="btn btn-primary btn-large" id="startOptimization">
+                            <i class="fas fa-play"></i> 開始優化分析
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 優化結果 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>優化結果</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="optimizationProgress" class="progress-container" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-text" id="progressText">分析中...</div>
+                        </div>
+                        
+                        <div id="optimizationResults" style="display: none;">
+                            <div class="result-summary">
+                                <div class="result-item">
+                                    <span class="result-label">優化前總距離：</span>
+                                    <span class="result-value" id="beforeDistance">-</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">優化後總距離：</span>
+                                    <span class="result-value" id="afterDistance">-</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">節省距離：</span>
+                                    <span class="result-value improvement" id="savedDistance">-</span>
+                                </div>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button class="btn btn-success" id="applyOptimization">
+                                    <i class="fas fa-check"></i> 採用建議
+                                </button>
+                                <button class="btn btn-secondary" id="exportResults">
+                                    <i class="fas fa-download"></i> 匯出報告
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 其他頁面會繼續添加... -->
+    </main>
+
+    <!-- 載入中遮罩 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>載入中...</p>
+        </div>
+    </div>
+
+    <!-- 模態視窗 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">標題</h3>
+                <span class="modal-close" id="modalClose">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 動態內容 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modalCancel">取消</button>
+                <button class="btn btn-primary" id="modalConfirm">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
