@@ -1093,6 +1093,11 @@
                 max-height: 400px;
             }
         }
+        /* 派車收送點清單表格可自動伸縮 */
+#deliveryPointsTableContainer {
+  max-height: 400px;
+  overflow-y: auto;
+}
     </style>
 </head>
 <body>
@@ -1492,6 +1497,28 @@
                 <div class="page-header">
                     <h2><i class="fas fa-brain"></i> AI路線優化</h2>
                 </div>
+                                <!-- 派車收送點清單區塊 -->
+                <div id="deliveryPointsPanel" class="card" style="margin-bottom: 1.5rem;">
+                  <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                      <h3 style="margin: 0;">派車收送點清單</h3>
+                    </div>
+                    <div>
+                      <input type="date" id="deliveryDatePicker" class="form-input" style="width: auto;">
+                      <button class="btn btn-primary btn-sm" id="fetchDeliveryPointsBtn">
+                        <i class="fas fa-search"></i> 查詢
+                      </button>
+                    </div>
+                  </div>
+                  <div class="card-body" style="padding: 1rem;">
+                    <div id="deliveryPointsTableContainer">
+                      <!-- 資料表格將由 JS 動態產生 -->
+                    </div>
+                    <button id="toggleDeliveryPoints" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem; display: none;">
+                      展開更多
+                    </button>
+                  </div>
+                </div>
 
                 <div class="optimization-container">
                     <!-- 優化參數設定 -->
@@ -1753,7 +1780,7 @@
         // 全域變數
         const CONFIG = {
             SPREADSHEET_ID: '1miCf_ZTVyzmA1MNbbZM3uUdZjluk99gZUH5w2q_XWs8',
-            GAS_URL: 'https://script.google.com/macros/s/AKfycbzjU40aZNRYzWV_4mfIxh4JkIFF7nqI19kA-NVQiqj7oRQZbWbeS2EjzYw1JR8HJfK0WQ/exec',
+            GAS_URL: 'https://script.google.com/macros/s/AKfycbxxS1PS8gnejJwg5Tf5tDR2PAZdDuIjiqp_eLQPSHSmih1hKS_7zChnjDjE3Q6cPj64/exec',
             USE_MOCK_DATA: false,
             MAPS_API_KEY: 'AIzaSyDtP8oDCXfr0CPLyVv_WrAqmk2V9QgteLI',
             WEATHER_API_KEY: 'a4806bc2577c0c227f9acd8bccb566a5',
@@ -4625,6 +4652,100 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('版本: 1.0.0');
         console.log('作者: 昶青物流技術團隊');
         console.log('最後更新: 2025-06-27');
+
+        // 工具：將 yyyy-mm-dd 轉 yyyy/MM/dd
+function formatDateForSheet(dateStr) {
+  if (!dateStr) return '';
+  return dateStr.replace(/-/g, '/');
+}
+
+// 綁定事件
+document.getElementById('fetchDeliveryPointsBtn').addEventListener('click', fetchDeliveryPoints);
+
+async function fetchDeliveryPoints() {
+  const dateInput = document.getElementById('deliveryDatePicker').value;
+  if (!dateInput) {
+    app.showNotification('請選擇日期', 'warning');
+    return;
+  }
+  const date = formatDateForSheet(dateInput);
+
+  // 呼叫 GAS API
+  app.showLoading();
+  try {
+    const data = await app.apiCall('getDeliveryPoints', { date });
+    renderDeliveryPointsTable(data);
+  } catch (e) {
+    app.showNotification('資料載入失敗', 'error');
+  } finally {
+    app.hideLoading();
+  }
+}
+// 新增一個去前導零的工具
+function removeLeadingZero(dateStr) {
+  return dateStr.replace(/\/0(\d)/g, '/$1');
+}
+
+// 篩選符合日期的資料列（比較下單日期）
+const filteredData = allData.slice(1).filter(row => {
+    const rowDate = row[orderDateColumnIndex];
+    let formattedRowDate = '';
+    if (rowDate instanceof Date) {
+        formattedRowDate = Utilities.formatDate(rowDate, 'GMT+8', 'yyyy/M/d');
+    } else if (typeof rowDate === 'string') {
+        try {
+            const parsedDate = new Date(rowDate);
+            formattedRowDate = Utilities.formatDate(parsedDate, 'GMT+8', 'yyyy/M/d');
+        } catch (e) {
+            formattedRowDate = rowDate.split(' ')[0];
+        }
+    }
+    // 這裡兩邊都去前導零
+    const isMatch = removeLeadingZero(formattedRowDate) === removeLeadingZero(date);
+    return isMatch;
+});
+        
+function renderDeliveryPointsTable(data) {
+  const container = document.getElementById('deliveryPointsTableContainer');
+  container.innerHTML = '';
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div style="color: #888;">查無資料</div>';
+    document.getElementById('toggleDeliveryPoints').style.display = 'none';
+    return;
+  }
+
+  // 產生表頭
+  const headers = Object.keys(data[0]);
+  let table = '<table class="data-table"><thead><tr>';
+  headers.forEach(h => table += `<th>${h}</th>`);
+  table += '</tr></thead><tbody>';
+
+  // 產生資料列
+  data.forEach((row, idx) => {
+    table += `<tr class="delivery-row${idx > 2 ? ' collapsed' : ''}">`;
+    headers.forEach(h => table += `<td>${row[h] || ''}</td>`);
+    table += '</tr>';
+  });
+  table += '</tbody></table>';
+  container.innerHTML = table;
+
+  // 控制展開/收摺
+  const toggleBtn = document.getElementById('toggleDeliveryPoints');
+  if (data.length > 3) {
+    toggleBtn.style.display = 'inline-block';
+    toggleBtn.textContent = '展開更多';
+    toggleBtn.onclick = function() {
+      const collapsedRows = container.querySelectorAll('.collapsed');
+      const isCollapsed = collapsedRows[0].style.display !== '';
+      collapsedRows.forEach(row => row.style.display = isCollapsed ? '' : 'none');
+      toggleBtn.textContent = isCollapsed ? '收摺' : '展開更多';
+    };
+    // 預設收摺
+    container.querySelectorAll('.collapsed').forEach(row => row.style.display = 'none');
+  } else {
+    toggleBtn.style.display = 'none';
+  }
+}
     </script>
 
    
