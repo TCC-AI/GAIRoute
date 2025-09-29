@@ -2976,7 +2976,7 @@
   font-size:.25rem;
   color:#64748b;
   flex-wrap:wrap;
-justify-content:flex-end; / 右靠齊 */
+justify-content:flex-end; /* 右靠齊 */
     
 }
 .dashboard-data-meta .fresh-badge {
@@ -4550,7 +4550,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const CONFIG = {
             SPREADSHEET_ID: '1miCf_ZTVyzmA1MNbbZM3uUdZjluk99gZUH5w2q_XWs8',
             EXTERNAL_SPREADSHEET_ID: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc', // 第二個檔案ID（外部資料、GAI分析等）
-            GAS_URL: 'https://script.google.com/macros/s/AKfycbyH6iBdcOURHygc-r4kXXWTpsEnXHWhg2pt6qzdjeM_2GJpeUVXZt4NVF2XyUEFbaqPqA/exec',
+            GAS_URL: 'https://script.google.com/macros/s/AKfycbxUnsRWZYmHN7hoi5aCDP6oIIZRT2M48UQihZ5orGR2_lStCW6y6kyIX2FN2BGol08Xiw/exec',
             USE_MOCK_DATA: false,
             MAPS_API_KEY: 'AIzaSyDtP8oDCXfr0CPLyVv_WrAqmk2V9QgteLI',
             WEATHER_API_KEY: 'a4806bc2577c0c227f9acd8bccb566a5',
@@ -5454,36 +5454,51 @@ showDataAnalysisReport() {
     this.hideGAIAssistantModal();
     this.switchPage('reports');
 }
-/**
- * 匯出當日各路線表為 Excel 檔案 - 格式保留版
- */
-async exportCurrentDayRouteSheet() {
+// 🚀 優化前端載入提示
+async exportCurrentDayRouteSheet(preserveFormat = true) {
     try {
-        this.showLoading('正在準備匯出檔案，請稍候...');
+        // 🎯 根據模式顯示不同的載入訊息
+        const loadingMessage = preserveFormat 
+            ? '正在保留格式匯出，預計需要 10-15 秒...' 
+            : '正在快速匯出，請稍候...';
+            
+        this.showLoading(loadingMessage);
+        
+        // 🎯 顯示進度提示
+        let progressCounter = 0;
+        const progressInterval = setInterval(() => {
+            progressCounter += 2;
+            if (progressCounter <= 100) {
+                const dots = '.'.repeat((progressCounter / 10) % 4);
+                const message = preserveFormat 
+                    ? `正在保留格式匯出${dots} (${progressCounter}%)` 
+                    : `正在快速匯出${dots} (${progressCounter}%)`;
+                this.updateLoadingMessage(message);
+            }
+        }, 1000);
         
         console.log('開始匯出當日各路線表...');
         
-        // 呼叫後端 API 匯出指定的 Google Sheet
         const result = await this.apiCall('exportRouteSheetAsExcel', {
             targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc',
-            sheetName: '當日各路線表',
-            exportFormat: 'excel'
+            sheetNames: ['當日各路線表', '各路線板數'],
+            exportFormat: 'excel',
+            multiSheet: true,
+            preserveFormat: preserveFormat
         });
+        
+        clearInterval(progressInterval);
         
         console.log('API 返回結果:', result);
         
         if (result && result.success) {
-            // 顯示格式保留確認
-            this.showFormatPreservationInfo(result);
-            
-            // 自動下載檔案
             this.downloadExcelFile(result.downloadUrl, result.filename);
             
-            this.showNotification(
-                `路線表匯出成功！檔案：${result.filename}`, 
-                'success', 
-                6000
-            );
+            const message = preserveFormat 
+                ? `✅ 格式保留匯出成功！檔案：${result.filename}` 
+                : `✅ 快速匯出成功！檔案：${result.filename}`;
+                
+            this.showNotification(message, 'success', 6000);
             
         } else {
             throw new Error(result?.message || '匯出失敗，請稍後再試');
@@ -5491,15 +5506,31 @@ async exportCurrentDayRouteSheet() {
         
     } catch (error) {
         console.error('匯出路線表失敗:', error);
-        this.showNotification(`匯出失敗: ${error.message}`, 'error');
-        
-        // 提供備用方案
-        this.showFallbackExportOptions();
+        this.showNotification(`❌ 匯出失敗: ${error.message}`, 'error');
         
     } finally {
         this.hideLoading();
     }
 }
+
+// 🚀 新增更新載入訊息的方法
+updateLoadingMessage(message) {
+    const loadingElement = document.querySelector('.loading-message');
+    if (loadingElement) {
+        loadingElement.textContent = message;
+    }
+}
+
+
+// 🔥 新增兩個不同的匯出選項
+async exportCurrentDayRouteSheetWithFormat() {
+    return this.exportCurrentDayRouteSheet(true); // 保留格式
+}
+
+async exportCurrentDayRouteSheetDataOnly() {
+    return this.exportCurrentDayRouteSheet(false); // 只匯出資料
+}
+
             // 檢查用戶級別
 checkUserLevel(requiredLevel) {
     const levelHierarchy = {
@@ -5855,8 +5886,8 @@ async loadPageData(pageName) {
             await this.loadRouteOptimization();
             break;
         // 👇 新增：各路線板數頁面載入
-        case 'route-pallets':
-            await this.loadRoutePallets();
+        case 'route-pallets': 
+            await this.loadRoutePallets(); 
             break;
         case 'seasonal-routes':
             await this.loadSeasonalRoutes();
@@ -5876,60 +5907,133 @@ async loadPageData(pageName) {
     }
 }
 
-// 👇 新增：載入各路線板數資料
 async loadRoutePallets() {
-    this.showPartialLoading('routePalletsTableContainer', '正在載入各路線板數資料...');
+    console.log('=== 開始載入各路線板數頁面 ===');
     
     try {
-        console.log('開始載入各路線板數資料...');
+        // 1. 頁面切換和權限檢查
+        this.showPage('route-pallets');
         
-        // 更新狀態
+        // 2. 權限驗證
+        console.log('檢查用戶權限...');
+        console.log('當前用戶:', {
+            username: currentUser.username,
+            level: currentUser.level,
+            permissions: currentUser.permissions
+        });
+        
+        if (!this.hasPermission('route-management')) {
+            console.error('權限檢查失敗: 缺少 route-management 權限');
+            this.showAccessDenied('route-pallets');
+            return;
+        }
+        
+        if (!this.checkUserLevel('s2')) {
+            console.error('權限檢查失敗: 用戶級別不足 s2');
+            this.showAccessDenied('route-pallets');
+            return;
+        }
+        
+        console.log('✅ 權限檢查通過');
+        
+        // 3. 顯示載入狀態
+        this.showPartialLoading('routePalletsTableContainer', '正在載入各路線板數資料...');
+        
+        // 4. 更新狀態元素
         const statusElement = document.getElementById('routePalletsStatus');
         const timeElement = document.getElementById('routePalletsDataTime');
         
-        if (statusElement) statusElement.textContent = '載入中';
-        if (timeElement) timeElement.textContent = '';
+        if (statusElement) {
+            statusElement.textContent = '載入中';
+            statusElement.className = 'fresh-badge';
+        }
+        if (timeElement) {
+            timeElement.textContent = '正在載入...';
+        }
         
-        // 呼叫 API 獲取外部 Google Sheet 資料
-        const result = await this.apiCall('getRoutePalletsData', {
+        // 5. API 參數準備
+        const apiParams = {
             targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc',
             sheetName: '各路線板數'
+        };
+        
+        console.log('API 調用參數:', apiParams);
+        
+        // 6. 調用 API 獲取資料
+        console.log('準備呼叫 API: getRoutePalletsData');
+        
+        let result;
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            console.log('使用模擬資料模式');
+            result = this.getMockRoutePalletsData();
+        } else {
+            console.log('調用真實 API...');
+            result = await this.apiCall('getRoutePalletsData', apiParams);
+        }
+        
+        console.log('API 返回結果:', {
+            type: typeof result,
+            isArray: Array.isArray(result),
+            length: result ? result.length : 0,
+            firstItem: result && result.length > 0 ? result[0] : null
         });
         
-        console.log('各路線板數資料:', result);
-        
-        if (result && result.length > 0) {
-            this.displayRoutePalletsData(result);
-            
-            // 更新狀態
-            if (statusElement) {
-                statusElement.textContent = '最新';
-                statusElement.className = 'fresh-badge';
-            }
-            if (timeElement) {
-                timeElement.textContent = `資料更新時間: ${new Date().toLocaleString('zh-TW')}`;
-            }
-            
-            this.showNotification(`成功載入 ${result.length} 筆路線板數資料`, 'success');
-        } else {
-            this.showEmptyRoutePalletsState();
-            this.showNotification('暫無各路線板數資料', 'info');
+        // 7. 資料驗證
+        if (!result) {
+            console.warn('API 返回 null 或 undefined');
+            throw new Error('API 返回空值，請檢查後端服務');
         }
+        
+        if (!Array.isArray(result)) {
+            console.error('API 返回資料格式錯誤:', typeof result);
+            throw new Error(`API 返回資料格式錯誤，期望陣列但收到 ${typeof result}`);
+        }
+        
+        if (result.length === 0) {
+            console.warn('API 返回空陣列');
+            this.showEmptyRoutePalletsState();
+            this.updateRoutePalletsStatus('無資料', '暫無資料', 'expired');
+            this.showNotification('各路線板數工作表暫無資料', 'info');
+            return;
+        }
+        
+        // 8. 資料處理成功
+        console.log(`✅ 成功獲取 ${result.length} 筆各路線板數資料`);
+        
+        // 9. 顯示資料
+        this.displayRoutePalletsData(result);
+        
+        // 10. 更新狀態為成功
+        this.updateRoutePalletsStatus('最新', new Date().toLocaleString('zh-TW'), 'fresh');
+        
+        // 11. 顯示成功通知
+        this.showNotification(`✅ 成功載入 ${result.length} 筆路線板數資料`, 'success');
+        
+        console.log('=== 各路線板數頁面載入完成 ===');
         
     } catch (error) {
-        console.error('載入各路線板數資料失敗:', error);
-        this.showErrorState('routePalletsTableContainer', error.message);
+        // 12. 錯誤處理
+        console.error('=== 載入各路線板數資料失敗 ===');
+        console.error('錯誤詳情:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
         
-        // 更新狀態為錯誤
-        const statusElement = document.getElementById('routePalletsStatus');
-        if (statusElement) {
-            statusElement.textContent = '載入失敗';
-            statusElement.className = 'fresh-badge expired';
-        }
+        // 13. 顯示錯誤狀態
+        this.showErrorState('routePalletsTableContainer', this.formatErrorMessage(error));
         
-        this.showNotification(`載入失敗: ${error.message}`, 'error');
+        // 14. 更新狀態為錯誤
+        this.updateRoutePalletsStatus('載入失敗', '發生錯誤', 'expired');
+        
+        // 15. 顯示錯誤通知
+        this.showNotification(`❌ 載入失敗: ${this.formatErrorMessage(error)}`, 'error');
+        
+        // 16. 根據錯誤類型提供建議
+        this.showErrorSuggestions(error);
     }
 }
+
 
 // 👇 新增：顯示各路線板數資料
 displayRoutePalletsData(data) {
@@ -9586,6 +9690,13 @@ async showRouteAddresses(routeName) {
 
             // 載入頁面資料
             async loadPageData(pageName) {
+                             // 👇 新增：各路線板數頁面權限檢查
+                if (pageName === 'route-pallets') {
+                    if (!this.hasPermission('route-management') || !this.checkUserLevel('s2')) {
+                        this.showAccessDenied(pageName);
+                        return;
+                    }
+                }
                 // 檢查權限
                 if (!this.hasPermission(pageName)) {
                     this.showAccessDenied(pageName);
@@ -9857,6 +9968,7 @@ async loadDashboard() {
             
             // 同時獲取各項數據
             try {
+                console.log('開始獲取各路線板數資料...');
                 const [palletSum, nonZeroPercentage, lastBValue, alertValue] = await Promise.all([
                     this.apiCall('getRoutePalletSum', {
                         targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc'
@@ -9872,6 +9984,13 @@ async loadDashboard() {
                     })
                 ]);
                 
+                console.log('獲取到的資料:', {
+                    palletSum,
+                    nonZeroPercentage,
+                    lastBValue,
+                    alertValue
+                });
+                
                 routePalletSum = palletSum;
                 routePalletNonZeroPercentage = nonZeroPercentage;
                 routeTableLastBValue = lastBValue;
@@ -9879,6 +9998,7 @@ async loadDashboard() {
                 
             } catch (error) {
                 console.error('獲取外部資料失敗:', error);
+                this.showNotification(`獲取各路線板數資料失敗: ${error.message}`, 'error');
                 routePalletSum = 0;
                 routePalletNonZeroPercentage = 0;
                 routeTableLastBValue = 0;
