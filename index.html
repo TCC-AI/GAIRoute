@@ -4550,7 +4550,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const CONFIG = {
             SPREADSHEET_ID: '1miCf_ZTVyzmA1MNbbZM3uUdZjluk99gZUH5w2q_XWs8',
             EXTERNAL_SPREADSHEET_ID: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc', // 第二個檔案ID（外部資料、GAI分析等）
-            GAS_URL: 'https://script.google.com/macros/s/AKfycbxUnsRWZYmHN7hoi5aCDP6oIIZRT2M48UQihZ5orGR2_lStCW6y6kyIX2FN2BGol08Xiw/exec',
+            GAS_URL: 'https://script.google.com/macros/s/AKfycby1eR1EpjQedxdjlzLlcbKB8L0jenBE2sCzCuX0MVr_dKCQXmhvMieN0cjZvJKygQ5duQ/exec',
             USE_MOCK_DATA: false,
             MAPS_API_KEY: 'AIzaSyDtP8oDCXfr0CPLyVv_WrAqmk2V9QgteLI',
             WEATHER_API_KEY: 'a4806bc2577c0c227f9acd8bccb566a5',
@@ -9664,13 +9664,7 @@ async showRouteAddresses(routeName) {
                 // 載入頁面特定資料
                 this.loadPageData(pageName);
                 
-                // 如果切換到主控台頁面，自動顯示GAI秘書對話框
-                if (pageName === 'dashboard') {
-                    // 延遲1秒顯示，讓頁面切換動畫完成
-                    setTimeout(() => {
-                        this.showGAISecretaryModal();
-                    }, 1000);
-                }
+                
              }
 
 
@@ -9945,7 +9939,37 @@ async showRouteAddresses(routeName) {
 
 // 載入主控台資料 (修改版)
 async loadDashboard() {
-     this.showLoading('正在載入主控台資料...', true); // 允許互動
+    // 🔥 新增：先檢查快取（只在線上模式且非模擬資料時使用）
+    if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
+        const cachedData = DashboardCache.get();
+        
+        if (cachedData) {
+            console.log('⚡ 使用快取資料，立即顯示');
+            
+            // 立即更新 UI（使用快取資料）
+            document.getElementById('todayDeliveries').textContent = cachedData.routePalletSum;
+            document.getElementById('vehicleUsage').textContent = `${cachedData.routePalletNonZeroPercentage}%`;
+            document.getElementById('onTimeRate').textContent = cachedData.routeTableLastBValue;
+            document.getElementById('alertCount').textContent = cachedData.routeTableAlertValue;
+            
+            // 更新異常警示樣式
+            const alertElement = document.getElementById('alertCount');
+            if (cachedData.routeTableAlertValue > 2) {
+                alertElement.classList.add('alert');
+            } else {
+                alertElement.classList.remove('alert');
+            }
+            
+            // 顯示快取提示（可選）
+            this.showNotification('數據已驅動', 'info', 2000);
+            
+            return; // 直接返回，不再載入
+        }
+    }
+    
+    // 原本的載入邏輯（完全不變）
+    this.showLoading('正在載入主控台資料...', true);
+    
     try {
         let dashboardData;
         let routePalletSum = 0;
@@ -9955,10 +9979,10 @@ async loadDashboard() {
         
         if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
             dashboardData = this.getMockData('getDashboardData');
-            routePalletSum = 163; // 模擬資料
-            routePalletNonZeroPercentage = 10; // 模擬百分比
-            routeTableLastBValue = 7436.04; // 模擬路線表B欄位最後值
-            routeTableAlertValue = 2.01; // 模擬異常警示值 (7436.04 × 0.27 ÷ 1000)
+            routePalletSum = 163;
+            routePalletNonZeroPercentage = 10;
+            routeTableLastBValue = 7436.04;
+            routeTableAlertValue = 2.01;
             if (!this.isOnline) {
                 this.showNotification('目前使用離線模式', 'warning');
             }
@@ -10004,17 +10028,28 @@ async loadDashboard() {
                 routeTableLastBValue = 0;
                 routeTableAlertValue = 0;
             }
+            
+            // 🔥 新增：儲存到快取（只在線上模式且非模擬資料時）
+            if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
+                DashboardCache.set({
+                    routePalletSum,
+                    routePalletNonZeroPercentage,
+                    routeTableLastBValue,
+                    routeTableAlertValue
+                });
+                console.log('💾 資料已快取（30分鐘有效）');
+            }
         }
         
-        // 更新統計數據
+        // 更新統計數據（原本的邏輯）
         document.getElementById('todayDeliveries').textContent = routePalletSum;
         document.getElementById('vehicleUsage').textContent = `${routePalletNonZeroPercentage}%`;
         document.getElementById('onTimeRate').textContent = routeTableLastBValue;
-        document.getElementById('alertCount').textContent = routeTableAlertValue; // 顯示計算後的異常警示值
+        document.getElementById('alertCount').textContent = routeTableAlertValue;
 
-        // 根據異常警示值更新樣式
+        // 根據異常警示值更新樣式（原本的邏輯）
         const alertElement = document.getElementById('alertCount');
-        if (routeTableAlertValue > 2) { // 可以根據需要調整閾值
+        if (routeTableAlertValue > 2) {
             alertElement.classList.add('alert');
         } else {
             alertElement.classList.remove('alert');
@@ -10027,6 +10062,7 @@ async loadDashboard() {
         this.hideLoading();
     }
 }
+
 
 
 
@@ -10265,32 +10301,35 @@ async viewExternalRoute(routeName) {
                 `);
             }
 
-            // 刪除路線
-            async deleteRoute(routeId) {
-                if (!confirm('確定要刪除此路線嗎？此操作無法復原。')) {
-                    return;
-                }
+async deleteRoute(routeId) {
+    if (!confirm('確定要刪除此路線嗎？此操作無法復原。')) {
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        // 模擬刪除
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        this.showNotification('路線已刪除', 'success');
-                    } else {
-                        await this.apiCall('deleteRoute', { routeId });
-                        this.showNotification('路線已刪除', 'success');
-                    }
-                    
-                    // 重新載入路線列表
-                    await this.loadRouteManagement();
-                } catch (error) {
-                    console.error('刪除路線失敗:', error);
-                    this.showNotification('刪除路線失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+    this.showLoading();
+    try {
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            this.showNotification('路線已刪除', 'success');
+        } else {
+            await this.apiCall('deleteRoute', { routeId });
+            this.showNotification('路線已刪除', 'success');
+        }
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        await this.loadRouteManagement();
+    } catch (error) {
+        console.error('刪除路線失敗:', error);
+        this.showNotification('刪除路線失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 顯示新增路線模態視窗
             showAddRouteModal() {
@@ -10321,44 +10360,50 @@ async viewExternalRoute(routeName) {
             }
 
             // 新增路線
-            async addNewRoute() {
-                const routeName = document.getElementById('newRouteName').value.trim();
-                const startPoint = document.getElementById('newStartPoint').value.trim();
-                const endPoint = document.getElementById('newEndPoint').value.trim();
-                const stopPoints = document.getElementById('newStopPoints').value.trim().split('\n').filter(p => p.trim());
-                const estimatedTime = parseInt(document.getElementById('newEstimatedTime').value);
+           async addNewRoute() {
+    const routeName = document.getElementById('newRouteName').value.trim();
+    const startPoint = document.getElementById('newStartPoint').value.trim();
+    const endPoint = document.getElementById('newEndPoint').value.trim();
+    const stopPoints = document.getElementById('newStopPoints').value.trim().split('\n').filter(p => p.trim());
+    const estimatedTime = parseInt(document.getElementById('newEstimatedTime').value);
 
-                if (!routeName || !startPoint || !endPoint) {
-                    this.showNotification('請填寫必要欄位', 'warning');
-                    return;
-                }
+    if (!routeName || !startPoint || !endPoint) {
+        this.showNotification('請填寫必要欄位', 'warning');
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        // 模擬新增
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        this.showNotification('路線新增成功', 'success');
-                    } else {
-                        await this.apiCall('addRoute', {
-                            name: routeName,
-                            startPoint,
-                            endPoint,
-                            stopPoints,
-                            estimatedTime
-                        });
-                        this.showNotification('路線新增成功', 'success');
-                    }
-                    
-                    this.hideModal();
-                    await this.loadRouteManagement();
-                } catch (error) {
-                    console.error('新增路線失敗:', error);
-                    this.showNotification('新增路線失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+    this.showLoading();
+    try {
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            // 模擬新增
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            this.showNotification('路線新增成功', 'success');
+        } else {
+            await this.apiCall('addRoute', {
+                name: routeName,
+                startPoint,
+                endPoint,
+                stopPoints,
+                estimatedTime
+            });
+            this.showNotification('路線新增成功', 'success');
+        }
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        this.hideModal();
+        await this.loadRouteManagement();
+    } catch (error) {
+        console.error('新增路線失敗:', error);
+        this.showNotification('新增路線失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 顯示批量匯入模態視窗
             showImportRoutesModal() {
@@ -10626,74 +10671,85 @@ async viewExternalRoute(routeName) {
             }
 
             // 執行緊急調派
-            async executeEmergencyDispatch() {
-                const emergencyType = document.getElementById('emergencyType').value;
-                const location = document.getElementById('emergencyLocation').value.trim();
-                const description = document.getElementById('emergencyDescription').value.trim();
-                const priority = document.getElementById('emergencyPriority').value;
+async executeEmergencyDispatch() {
+    const emergencyType = document.getElementById('emergencyType').value;
+    const location = document.getElementById('emergencyLocation').value.trim();
+    const description = document.getElementById('emergencyDescription').value.trim();
+    const priority = document.getElementById('emergencyPriority').value;
 
-                if (!emergencyType || !location || !description) {
-                    this.showNotification('請填寫所有必要欄位', 'warning');
-                    return;
-                }
+    if (!emergencyType || !location || !description) {
+        this.showNotification('請填寫所有必要欄位', 'warning');
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    let result;
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        result = this.getMockData('emergencyDispatch');
-                    } else {
-                        result = await this.apiCall('emergencyDispatch', {
-                            type: emergencyType,
-                            location,
-                            description,
-                            priority
-                        });
-                    }
+    this.showLoading();
+    try {
+        let result;
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            result = this.getMockData('emergencyDispatch');
+        } else {
+            result = await this.apiCall('emergencyDispatch', {
+                type: emergencyType,
+                location,
+                description,
+                priority
+            });
+        }
 
-                    this.hideModal();
-                    this.showNotification(`緊急調派已啟動！預計 ${result.estimatedResponse} 內到達`, 'success');
-                    
-                    // 更新主控台警示數量
-                    const alertCount = document.getElementById('alertCount');
-                    const currentCount = parseInt(alertCount.textContent) || 0;
-                    alertCount.textContent = currentCount + 1;
-                    alertCount.classList.add('alert');
-                    
-                } catch (error) {
-                    console.error('緊急調派失敗:', error);
-                    this.showNotification('緊急調派失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+        this.hideModal();
+        this.showNotification(`緊急調派已啟動！預計 ${result.estimatedResponse} 內到達`, 'success');
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        // 更新主控台警示數量
+        const alertCount = document.getElementById('alertCount');
+        const currentCount = parseInt(alertCount.textContent) || 0;
+        alertCount.textContent = currentCount + 1;
+        alertCount.classList.add('alert');
+        
+    } catch (error) {
+        console.error('緊急調派失敗:', error);
+        this.showNotification('緊急調派失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 路線重規劃
-            async rerouteAllVehicles() {
-                if (!confirm('確定要重新規劃所有車輛路線嗎？這可能需要幾分鐘時間。')) {
-                    return;
-                }
+async rerouteAllVehicles() {
+    if (!confirm('確定要重新規劃所有車輛路線嗎？這可能需要幾分鐘時間。')) {
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        // 模擬重規劃過程
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        this.showNotification('所有車輛路線重規劃完成', 'success');
-                    } else {
-                        await this.apiCall('rerouteAllVehicles');
-                        this.showNotification('所有車輛路線重規劃完成', 'success');
-                    }
-                    
-                    // 重新載入主控台資料
-                    await this.loadDashboard();
-                } catch (error) {
-                    console.error('路線重規劃失敗:', error);
-                    this.showNotification('路線重規劃失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+    this.showLoading();
+    try {
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            this.showNotification('所有車輛路線重規劃完成', 'success');
+        } else {
+            await this.apiCall('rerouteAllVehicles');
+            this.showNotification('所有車輛路線重規劃完成', 'success');
+        }
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        // 重新載入主控台資料
+        await this.loadDashboard();
+    } catch (error) {
+        console.error('路線重規劃失敗:', error);
+        this.showNotification('路線重規劃失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 顯示即時改道模態視窗
             showRealTimeRerouteModal() {
@@ -10727,39 +10783,44 @@ async viewExternalRoute(routeName) {
                 });
             }
 
-            // 執行即時改道
-            async executeRealTimeReroute() {
-                const vehicleId = document.getElementById('rerouteVehicle').value;
-                const reason = document.getElementById('rerouteReason').value;
-                const notes = document.getElementById('rerouteNotes').value.trim();
+async executeRealTimeReroute() {
+    const vehicleId = document.getElementById('rerouteVehicle').value;
+    const reason = document.getElementById('rerouteReason').value;
+    const notes = document.getElementById('rerouteNotes').value.trim();
 
-                if (!vehicleId || !reason) {
-                    this.showNotification('請填寫必要欄位', 'warning');
-                    return;
-                }
+    if (!vehicleId || !reason) {
+        this.showNotification('請填寫必要欄位', 'warning');
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        this.showNotification('即時改道指令已發送', 'success');
-                    } else {
-                        await this.apiCall('realTimeReroute', {
-                            vehicleId,
-                            reason,
-                            notes
-                        });
-                        this.showNotification('即時改道指令已發送', 'success');
-                    }
-                    
-                    this.hideModal();
-                } catch (error) {
-                    console.error('即時改道失敗:', error);
-                    this.showNotification('即時改道失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+    this.showLoading();
+    try {
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            this.showNotification('即時改道指令已發送', 'success');
+        } else {
+            await this.apiCall('realTimeReroute', {
+                vehicleId,
+                reason,
+                notes
+            });
+            this.showNotification('即時改道指令已發送', 'success');
+        }
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        this.hideModal();
+    } catch (error) {
+        console.error('即時改道失敗:', error);
+        this.showNotification('即時改道失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 初始化工作表
             async initializeSheets() {
@@ -12208,7 +12269,7 @@ function collapseAllRoutes() {
         </div>
     </div>
 </div>
-
+<script src="cache-manager.js"></script>
    
 </body>
 </html>
