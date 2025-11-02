@@ -8510,7 +8510,7 @@ DispatchGAISystem.prototype.renderDashboardFast = function(cached){
   // 先套數值：加上 fast-show 樣式
   document.getElementById('todayDeliveries').textContent = d.pallets ?? d.todayDeliveries ?? '-';
   document.getElementById('vehicleUsage').textContent = (d.nonZeroPct ?? d.vehicleUsage ?? '-') + '%';
-  document.getElementById('onTimeRate').textContent = d.lastB ?? d.onTimeRate ?? '-';
+  document.getElementById('onTimeRate').textContent = d.lostB ?? d.onTimeRate ?? '-';
   document.getElementById('alertCount').textContent = d.alert ?? d.alertCount ?? '-';
   ['todayDeliveries','vehicleUsage','onTimeRate','alertCount'].forEach(id=>{
     const el=document.getElementById(id);
@@ -8524,7 +8524,7 @@ DispatchGAISystem.prototype.applyDashboardUpdate = function(newData){
   const mapping = {
     todayDeliveries: newData.pallets ?? newData.todayDeliveries,
     vehicleUsage: (newData.nonZeroPct ?? newData.vehicleUsage) + '%',
-    onTimeRate: newData.lastB ?? newData.onTimeRate,
+    onTimeRate: newData.lostB ?? newData.onTimeRate,
     alertCount: newData.alert ?? newData.alertCount
   };
   Object.entries(mapping).forEach(([id,val])=>{
@@ -8556,7 +8556,7 @@ DispatchGAISystem.prototype.loadDashboard = async function(){
       const latest = {
         pallets: parseFloat(document.getElementById('todayDeliveries').textContent) || 0,
         nonZeroPct: parseFloat(document.getElementById('vehicleUsage').textContent) || 0,
-        lastB: document.getElementById('onTimeRate').textContent,
+        lostB: document.getElementById('onTimeRate').textContent,
         alert: document.getElementById('alertCount').textContent
       };
       DashboardCache.set(latest);
