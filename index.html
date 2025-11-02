@@ -11535,30 +11535,14 @@ async loadDashboard() {
     if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
         const cachedData = DashboardCache.get();
         
-        // ✅ 修改後（正確）
-if (cachedData) {
-    console.log('⚡ 使用快取資料，立即顯示');
-    
-    // 🔥 使用正確的欄位名稱
-    document.getElementById('todayDeliveries').textContent = cachedData.data.pallets;
-    document.getElementById('vehicleUsage').textContent = `${cachedData.data.nonzeroPct}%`;
-    document.getElementById('onTimeRate').textContent = cachedData.data.lostB;
-    document.getElementById('alertCount').textContent = cachedData.data.alert;
-    
-    // 更新異常警示樣式
-    const alertElement = document.getElementById('alertCount');
-    if (cachedData.data.alert > 2) {
-        alertElement.classList.add('alert');
-    } else {
-        alertElement.classList.remove('alert');
-    }
-    
-    // 顯示快取提示
-    this.showNotification('數據已驅動', 'info', 2000);
-    
-    return; // 直接返回，不再載入
-}
-
+        if (cachedData) {
+            console.log('⚡ 使用快取資料，立即顯示');
+            
+            // 立即更新 UI（使用快取資料）
+            document.getElementById('todayDeliveries').textContent = cachedData.routePalletSum;
+            document.getElementById('vehicleUsage').textContent = `${cachedData.routePalletNonZeroPercentage}%`;
+            document.getElementById('onTimeRate').textContent = cachedData.routeTableLastBValue;
+            document.getElementById('alertCount').textContent = cachedData.routeTableAlertValue;
             
             // 更新異常警示樣式
             const alertElement = document.getElementById('alertCount');
