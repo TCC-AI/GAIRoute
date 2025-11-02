@@ -6820,111 +6820,7 @@ class DashboardCache {
         }
     }
 }
-// ==================== 快取管理系統 ====================
-const DashboardCache = {
-    cache: {},
-    CACHE_DURATION: 5 * 60 * 1000, // 5分鐘快取有效期
-    
-    /**
-     * 獲取快取數據
-     * @param {string} key - 快取鍵名
-     * @returns {any|null} - 快取數據或 null
-     */
-    get: function(key) {
-        try {
-            const cached = this.cache[key];
-            
-            // 檢查快取是否存在
-            if (!cached) {
-                console.log(`📦 快取未命中: ${key}`);
-                return null;
-            }
-            
-            // 檢查快取是否過期
-            const now = Date.now();
-            if (now - cached.timestamp > this.CACHE_DURATION) {
-                console.log(`⏰ 快取已過期: ${key}`);
-                delete this.cache[key];
-                return null;
-            }
-            
-            console.log(`✅ 快取命中: ${key}`);
-            return cached.data;
-            
-        } catch (error) {
-            console.error('❌ 讀取快取失敗:', error);
-            return null;
-        }
-    },
-    
-    /**
-     * 設定快取數據
-     * @param {string} key - 快取鍵名
-     * @param {any} data - 要快取的數據
-     */
-    set: function(key, data) {
-        try {
-            this.cache[key] = {
-                data: data,
-                timestamp: Date.now()
-            };
-            console.log(`💾 快取已儲存: ${key}`, data);
-        } catch (error) {
-            console.error('❌ 儲存快取失敗:', error);
-        }
-    },
-    
-    /**
-     * 清除快取
-     * @param {string} [key] - 要清除的快取鍵名，不提供則清除全部
-     */
-    clear: function(key) {
-        if (key) {
-            delete this.cache[key];
-            console.log(`🗑️ 快取已清除: ${key}`);
-        } else {
-            this.cache = {};
-            console.log('🗑️ 所有快取已清除');
-        }
-    },
-    
-    /**
-     * 檢查快取是否存在
-     * @param {string} key - 快取鍵名
-     * @returns {boolean}
-     */
-    has: function(key) {
-        const cached = this.cache[key];
-        if (!cached) return false;
-        
-        const now = Date.now();
-        if (now - cached.timestamp > this.CACHE_DURATION) {
-            delete this.cache[key];
-            return false;
-        }
-        
-        return true;
-    },
-    
-    /**
-     * 獲取快取統計資訊
-     * @returns {object}
-     */
-    getStats: function() {
-        const keys = Object.keys(this.cache);
-        const now = Date.now();
-        const validCaches = keys.filter(key => {
-            const cached = this.cache[key];
-            return (now - cached.timestamp) <= this.CACHE_DURATION;
-        });
-        
-        return {
-            total: keys.length,
-            valid: validCaches.length,
-            expired: keys.length - validCaches.length
-        };
-    }
-};
+
 
         // 應用程式類別
         class DispatchGAISystem {
@@ -11643,51 +11539,131 @@ async showRouteAddresses(routeName) {
                 return mockData[action] || {};
             }
 
+// 載入主控台資料 (修改版)
 async loadDashboard() {
+    // 🔥 新增：先檢查快取（只在線上模式且非模擬資料時使用）
+    if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
+        const cachedData = DashboardCache.get();
+        
+        if (cachedData) {
+            console.log('⚡ 使用快取資料，立即顯示');
+            
+            // 立即更新 UI（使用快取資料）
+            document.getElementById('todayDeliveries').textContent = cachedData.routePalletSum;
+            document.getElementById('vehicleUsage').textContent = `${cachedData.routePalletNonZeroPercentage}%`;
+            document.getElementById('onTimeRate').textContent = cachedData.routeTableLastBValue;
+            document.getElementById('alertCount').textContent = cachedData.routeTableAlertValue;
+            
+            // 更新異常警示樣式
+            const alertElement = document.getElementById('alertCount');
+            if (cachedData.routeTableAlertValue > 2) {
+                alertElement.classList.add('alert');
+            } else {
+                alertElement.classList.remove('alert');
+            }
+            
+            // 顯示快取提示（可選）
+            this.showNotification('數據已驅動', 'info', 2000);
+            
+            return; // 直接返回，不再載入
+        }
+    }
+    
+    // 原本的載入邏輯（完全不變）
+    this.showLoading('正在載入主控台資料...', true);
+    
     try {
-        console.log('DOM 載入完成，開始初始化系統...');
+        let dashboardData;
+        let routePalletSum = 0;
+        let routePalletNonZeroPercentage = 0;
+        let routeTableLastBValue = 0;
+        let routeTableAlertValue = 0;
         
-        // ✅ 移除快取檢查，直接載入數據
-        console.log('開始載入儀表板數據...');
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            dashboardData = this.getMockData('getDashboardData');
+            routePalletSum = 163;
+            routePalletNonZeroPercentage = 10;
+            routeTableLastBValue = 7436.04;
+            routeTableAlertValue = 2.01;
+            if (!this.isOnline) {
+                this.showNotification('目前使用離線模式', 'warning');
+            }
+        } else {
+            // 獲取基本儀表板資料
+            dashboardData = await this.apiCall('getDashboardData');
+            
+            // 同時獲取各項數據
+            try {
+                console.log('開始獲取各路線板數資料...');
+                const [palletSum, nonZeroPercentage, lastBValue, alertValue] = await Promise.all([
+                    this.apiCall('getRoutePalletSum', {
+                        targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc'
+                    }),
+                    this.apiCall('getRoutePalletNonZeroPercentage', {
+                        targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc'
+                    }),
+                    this.apiCall('getRouteTableLastBValue', {
+                        targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc'
+                    }),
+                    this.apiCall('getRouteTableAlertValue', {
+                        targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc'
+                    })
+                ]);
+                
+                console.log('獲取到的資料:', {
+                    palletSum,
+                    nonZeroPercentage,
+                    lastBValue,
+                    alertValue
+                });
+                
+                routePalletSum = palletSum;
+                routePalletNonZeroPercentage = nonZeroPercentage;
+                routeTableLastBValue = lastBValue;
+                routeTableAlertValue = alertValue;
+                
+            } catch (error) {
+                console.error('獲取外部資料失敗:', error);
+                this.showNotification(`獲取各路線板數資料失敗: ${error.message}`, 'error');
+                routePalletSum = 0;
+                routePalletNonZeroPercentage = 0;
+                routeTableLastBValue = 0;
+                routeTableAlertValue = 0;
+            }
+            
+            // 🔥 新增：儲存到快取（只在線上模式且非模擬資料時）
+            if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
+                DashboardCache.set({
+                    routePalletSum,
+                    routePalletNonZeroPercentage,
+                    routeTableLastBValue,
+                    routeTableAlertValue
+                });
+                console.log('💾 資料已快取（30分鐘有效）');
+            }
+        }
         
-        const [
-            routePalletSum,
-            routePalletNonZeroPercentage,
-            routeTableLastBValue,
-            routeTableAlertValue
-        ] = await Promise.all([
-            this.apiCall('getRoutePalletSum', {
-                targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc'
-            }),
-            this.apiCall('getRoutePalletNonZeroPercentage', {
-                targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc'
-            }),
-            this.apiCall('getRouteTableLastBValue', {
-                targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc'
-            }),
-            this.apiCall('getRouteTableAlertValue', {
-                targetSpreadsheetId: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc'
-            })
-        ]);
+        // 更新統計數據（原本的邏輯）
+        document.getElementById('todayDeliveries').textContent = routePalletSum;
+        document.getElementById('vehicleUsage').textContent = `${routePalletNonZeroPercentage}%`;
+        document.getElementById('onTimeRate').textContent = routeTableLastBValue;
+        document.getElementById('alertCount').textContent = routeTableAlertValue;
 
-        const dashboardData = {
-            routePalletSum,
-            routePalletNonZeroPercentage,
-            routeTableLastBValue,
-            routeTableAlertValue
-        };
-
-        console.log('儀表板數據載入成功:', dashboardData);
-        
-        // ✅ 直接更新 UI，不使用快取
-        this.updateDashboardUI(dashboardData);
+        // 根據異常警示值更新樣式（原本的邏輯）
+        const alertElement = document.getElementById('alertCount');
+        if (routeTableAlertValue > 2) {
+            alertElement.classList.add('alert');
+        } else {
+            alertElement.classList.remove('alert');
+        }
 
     } catch (error) {
-        console.error('載入儀表板失敗:', error);
-        this.showError('載入儀表板數據失敗，請稍後再試');
+        console.error('載入主控台資料失敗:', error);
+        this.showNotification('載入主控台資料失敗', 'error');
+    } finally {
+        this.hideLoading();
     }
 }
-
 
 
 
