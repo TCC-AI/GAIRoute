@@ -8855,45 +8855,57 @@ document.getElementById('debugRouteData')?.addEventListener('click', async () =>
             }
 
             // 處理登入
-            async handleLogin() {
-                const username = elements.username.value.trim();
-                const password = elements.password.value.trim();
+// 處理登入
+async handleLogin() {
+    const username = elements.username.value.trim();
+    const password = elements.password.value.trim();
 
-                if (!username || !password) {
-                    this.showLoginError('請輸入帳號和密碼');
-                    return;
-                }
+    if (!username || !password) {
+        this.showLoginError('請輸入帳號和密碼');
+        return;
+    }
 
-                elements.loginBtn.disabled = true;
-                elements.loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登入中...';
+    elements.loginBtn.disabled = true;
+    elements.loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登入中...';
 
-                try {
-                    const loginResult = await this.authenticateUser(username, password);
-                    
-                    if (loginResult.success) {
-                        currentUser = loginResult.user;
-                        this.isLoggedIn = true;
-                        
-                        // 儲存登入狀態
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                        
-                        // 更新最後登入時間
-                        await this.updateLastLoginTime(username);
-                        
-                        this.showMainSystem();
-                        this.initializeMainSystem();
-                        this.showNotification(`歡迎回來，${currentUser.name}！`, 'success');
-                    } else {
-                        this.showLoginError(loginResult.message || '登入失敗');
-                    }
-                } catch (error) {
-                    console.error('登入錯誤:', error);
-                    this.showLoginError('登入時發生錯誤，請稍後再試');
-                } finally {
-                    elements.loginBtn.disabled = false;
-                    elements.loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登入';
-                }
+    try {
+        const loginResult = await this.authenticateUser(username, password);
+        
+        if (loginResult.success) {
+            currentUser = loginResult.user;
+            this.isLoggedIn = true;
+            
+            // 儲存登入狀態
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // 🔥 登入成功，清除所有快取
+            console.log('🧹 登入成功，清除所有快取');
+            if (typeof DashboardCache !== 'undefined') {
+                DashboardCache.clear();
             }
+            if (typeof CacheManager !== 'undefined') {
+                CacheManager.clear();
+            }
+            
+            // 更新最後登入時間
+            await this.updateLastLoginTime(username);
+            
+            this.showMainSystem();
+            this.initializeMainSystem();
+            this.showNotification(`歡迎回來，${currentUser.name}！`, 'success');
+        } else {
+            this.showLoginError(loginResult.message || '登入失敗');
+        }
+    } catch (error) {
+        console.error('登入錯誤:', error);
+        this.showLoginError('登入時發生錯誤，請稍後再試');
+    } finally {
+        elements.loginBtn.disabled = false;
+        elements.loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登入';
+    }
+}
+
+
 // 獲取上次查詢資料（託收託運回報_篩選）- 修正版
 async fetchLastQueryData() {
     const container = document.getElementById('deliveryPointsTableContainer');
@@ -11632,7 +11644,7 @@ async loadDashboard() {
                     routeTableLastBValue,
                     routeTableAlertValue
                 });
-                console.log('💾 資料已快取（30分鐘有效）');
+                console.log('💾 資料已快取（5分鐘有效）');
             }
         }
         
