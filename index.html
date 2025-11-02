@@ -4027,7 +4027,7 @@ justify-content:flex-end; /* 右靠齊 */
         
         <!-- 載入骨架屏 -->
         <div id="carbonChartSkeleton" style="display: none;">
-            <div style="height: 400px; background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 12px;"></div>
+            <div style="height: 350px; background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 12px;"></div>
         </div>
         
         <!-- 圖表容器 -->
@@ -4764,7 +4764,7 @@ function showDataStatistics() {
                     <i class="fas fa-arrow-up"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-label">單日最高值</span>
+                    <span class="stat-label">單日最高</span>
                     <span class="stat-value">${totalCarbonStats.max.toFixed(2)}</span>
                     <span class="stat-unit">公斤</span>
                 </div>
@@ -4775,7 +4775,7 @@ function showDataStatistics() {
                     <i class="fas fa-arrow-down"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-label">單日最低值</span>
+                    <span class="stat-label">單日最低</span>
                     <span class="stat-value">${totalCarbonStats.min.toFixed(2)}</span>
                     <span class="stat-unit">公斤</span>
                 </div>
@@ -5198,7 +5198,7 @@ async function loadCarbonChartData() {
     
     try {
         // 4. 調用 API
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyF0Wz98V-oCbZlnGZxrcoTPRWnjtP3bFkrUBJQ4t8FLw2w3_kcK6Fu0YnIRKgTjR6hTg/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZkX_tW_3vk1edpwf7fDNVMLB0tpUgvvRda90-lzJFVCrZUHvGaVH-7Gfp7idFDznR5g/exec';
         const url = `${GOOGLE_SCRIPT_URL}?action=getCarbonChartData&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
         
         console.log('🌐 API 請求:', url);
@@ -5280,7 +5280,7 @@ function updateCarbonChart(data) {
             borderWidth: 2,
             tension: 0.4,
             yAxisID: 'yLeft',
-            unit: '公斤'
+            unit: '公噸'
         },
         {
             label: '運務GAI',
@@ -6131,7 +6131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const CONFIG = {
             SPREADSHEET_ID: '1miCf_ZTVyzmA1MNbbZM3uUdZjluk99gZUH5w2q_XWs8',
             EXTERNAL_SPREADSHEET_ID: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc', // 第二個檔案ID（外部資料、GAI分析等）
-            GAS_URL: 'https://script.google.com/macros/s/AKfycbyF0Wz98V-oCbZlnGZxrcoTPRWnjtP3bFkrUBJQ4t8FLw2w3_kcK6Fu0YnIRKgTjR6hTg/exec',
+            GAS_URL: 'https://script.google.com/macros/s/AKfycbyZkX_tW_3vk1edpwf7fDNVMLB0tpUgvvRda90-lzJFVCrZUHvGaVH-7Gfp7idFDznR5g/exec',
             USE_MOCK_DATA: false,
             MAPS_API_KEY: 'AIzaSyDtP8oDCXfr0CPLyVv_WrAqmk2V9QgteLI',
             WEATHER_API_KEY: 'a4806bc2577c0c227f9acd8bccb566a5',
