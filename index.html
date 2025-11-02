@@ -8,6 +8,358 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* ==================== 統計資訊樣式 ==================== */
+
+/* 統計容器動畫 */
+#carbonStats {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 統計總覽網格 */
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* 統計卡片 */
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* 統計卡片圖示 */
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.5rem;
+}
+
+.stat-card-primary .stat-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stat-card-success .stat-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.stat-card-warning .stat-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.stat-card-info .stat-icon {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+}
+
+/* 統計內容 */
+.stat-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1;
+}
+
+.stat-unit {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* 詳細統計區域 */
+.stats-detail {
+    margin-bottom: 1.5rem;
+}
+
+/* 統計表格容器 */
+.stats-table-container {
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 統計表格 */
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-size: 0.875rem;
+}
+
+.stats-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stats-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.stats-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background 0.2s;
+}
+
+.stats-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.stats-table tbody tr.table-divider {
+    border-top: 2px solid #cbd5e1;
+}
+
+.stats-table td {
+    padding: 1rem;
+    color: #475569;
+}
+
+.table-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.table-label i {
+    font-size: 0.5rem;
+}
+
+/* 增長率樣式 */
+.growth-positive {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.growth-negative {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* 數據洞察區域 */
+.stats-insights {
+    /* 樣式已包含在上方 */
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+/* 洞察卡片 */
+.insight-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    border-left: 4px solid;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.insight-card i {
+    font-size: 1.5rem;
+    margin-top: 0.25rem;
+}
+
+.insight-card strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #1e293b;
+    font-size: 0.9375rem;
+}
+
+.insight-card p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* 洞察卡片類型 */
+.insight-warning {
+    border-left-color: #f59e0b;
+}
+
+.insight-warning i {
+    color: #f59e0b;
+}
+
+.insight-danger {
+    border-left-color: #ef4444;
+}
+
+.insight-danger i {
+    color: #ef4444;
+}
+
+.insight-success {
+    border-left-color: #10b981;
+}
+
+.insight-success i {
+    color: #10b981;
+}
+
+.insight-info {
+    border-left-color: #0ea5e9;
+}
+
+.insight-info i {
+    color: #0ea5e9;
+}
+
+/* 按鈕活動狀態 */
+#toggleStatsBtn.active {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .insights-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-table {
+        font-size: 0.75rem;
+    }
+    
+    .stats-table th,
+    .stats-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* 打印樣式 */
+@media print {
+    #carbonStats {
+        display: block !important;
+        page-break-inside: avoid;
+    }
+    
+    .stat-card,
+    .insight-card {
+        box-shadow: none;
+        border: 1px solid #e2e8f0;
+    }
+}
+
+        /* 預測控制器樣式 */
+#showPrediction {
+    accent-color: #fff;
+}
+
+#predictionDays:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 預測資訊卡片動畫 */
+#predictionInfo {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 預測線樣式（通過 Chart.js 配置，這裡僅作參考） */
+.prediction-line {
+    stroke-dasharray: 10, 5;
+    opacity: 0.8;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .card-header > div {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    #predictionDays {
+        width: 50px !important;
+    }
+}
+
+        @keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
         /* 響應式調整 */
 @media (max-width: 768px) {
     #deliveryPointsPanel .card-body > div:first-child {
@@ -3591,6 +3943,99 @@ justify-content:flex-end; /* 右靠齊 */
 
                     </div>
                 </div>
+                <!-- 碳排追蹤折線圖區塊 -->
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-chart-line"></i>
+            碳排追蹤趨勢分析
+        </h3>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <!-- 日期範圍選擇器 -->
+            <select id="carbonDateRange" class="form-input" style="width: auto; padding: 0.5rem 1rem;">
+                <option value="7">近 7 天</option>
+                <option value="30" selected>近 30 天</option>
+                <option value="90">近 90 天</option>
+                <option value="custom">自訂範圍</option>
+            </select>
+            
+            <!-- 自訂日期範圍（隱藏） -->
+            <div id="customDateRange" style="display: none; gap: 0.5rem;">
+                <input type="date" id="startDate" class="form-input" style="width: auto; padding: 0.5rem;">
+                <span style="color: var(--gray-500);">至</span>
+                <input type="date" id="endDate" class="form-input" style="width: auto; padding: 0.5rem;">
+            </div>
+ <!-- 🆕 統計按鈕 -->
+            <button 
+                id="toggleStatsBtn"
+                onclick="toggleStatistics()" 
+                class="btn btn-sm" 
+                style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <i class="fas fa-chart-bar"></i>
+                顯示統計
+            </button>
+                        <!-- 🆕 預測控制器 -->
+            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: white; font-size: 0.875rem; margin: 0;">
+                    <input type="checkbox" id="showPrediction" onchange="togglePrediction()" style="cursor: pointer; width: 16px; height: 16px;">
+                    <i class="fas fa-crystal-ball"></i>
+                    <span>預測</span>
+                </label>
+                
+                <input 
+                    type="number" 
+                    id="predictionDays" 
+                    min="1" 
+                    max="30" 
+                    value="7" 
+                    onchange="if(document.getElementById('showPrediction').checked) togglePrediction();"
+                    style="width: 60px; padding: 0.25rem 0.5rem; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; background: rgba(255,255,255,0.2); color: white; text-align: center; font-size: 0.875rem;"
+                    placeholder="天數"
+                >
+                <span style="color: white; font-size: 0.875rem;">天</span>
+            </div>
+            <!-- 重新整理按鈕 -->
+            <button class="btn btn-primary" onclick="refreshCarbonChart()" style="padding: 0.5rem 1rem;">
+                <i class="fas fa-sync-alt"></i>
+                重新整理
+            </button>
+        </div>
+    </div>
+    <!-- ========== 🆕 統計資訊容器(插入在這裡) ========== -->
+    <div id="carbonStats" style="display: none; padding: 1.5rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0;"></div>
+    <!-- ========== 插入結束 ========== -->
+    <div class="card-body">
+        <!-- 趨勢線控制區 -->
+        <div style="display: flex; justify-content: flex-end; gap: 1.5rem; margin-bottom: 1rem; padding: 0.75rem; background: var(--gray-50); border-radius: 8px;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+                <input type="checkbox" id="trendDispatch" onchange="toggleTrendLine('dispatch')" style="cursor: pointer;">
+                <span>派車GAI趨勢線</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+                <input type="checkbox" id="trendOperation" onchange="toggleTrendLine('operation')" style="cursor: pointer;">
+                <span>運務GAI趨勢線</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+                <input type="checkbox" id="trendStorage" onchange="toggleTrendLine('storage')" style="cursor: pointer;">
+                <span>託收托運GAI趨勢線</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+                <input type="checkbox" id="trendRevenue" onchange="toggleTrendLine('revenue')" style="cursor: pointer;">
+                <span>營業額趨勢線</span>
+            </label>
+        </div>
+        
+        <!-- 載入骨架屏 -->
+        <div id="carbonChartSkeleton" style="display: none;">
+            <div style="height: 400px; background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 12px;"></div>
+        </div>
+        
+        <!-- 圖表容器 -->
+        <div id="carbonChartContainer" style="position: relative; height: 500px;">
+            <canvas id="carbonChart"></canvas>
+        </div>
+    </div>
+</div>
 
                 <!-- 快速操作區 -->
                 <div class="quick-actions">
@@ -4112,6 +4557,1142 @@ justify-content:flex-end; /* 右靠齊 */
     </div>
 
     <script>
+        // ==================== 數據統計分析功能 ====================
+
+/**
+ * 計算總和
+ * @param {Array} data - 數據陣列
+ * @returns {number} 總和
+ */
+function calculateTotal(data) {
+    if (!data || data.length === 0) return 0;
+    
+    return data
+        .filter(v => v !== null && v !== undefined && !isNaN(v))
+        .reduce((sum, val) => sum + val, 0);
+}
+
+/**
+ * 計算平均值
+ * @param {Array} data - 數據陣列
+ * @returns {number} 平均值
+ */
+function calculateAverage(data) {
+    if (!data || data.length === 0) return 0;
+    
+    const validData = data.filter(v => v !== null && v !== undefined && !isNaN(v));
+    if (validData.length === 0) return 0;
+    
+    return calculateTotal(validData) / validData.length;
+}
+
+/**
+ * 計算標準差
+ * @param {Array} data - 數據陣列
+ * @returns {number} 標準差
+ */
+function calculateStdDev(data) {
+    if (!data || data.length === 0) return 0;
+    
+    const validData = data.filter(v => v !== null && v !== undefined && !isNaN(v));
+    if (validData.length === 0) return 0;
+    
+    const avg = calculateAverage(validData);
+    const squareDiffs = validData.map(value => Math.pow(value - avg, 2));
+    const avgSquareDiff = calculateAverage(squareDiffs);
+    
+    return Math.sqrt(avgSquareDiff);
+}
+
+/**
+ * 計算增長率
+ * @param {Array} data - 數據陣列
+ * @returns {number} 增長率（百分比）
+ */
+function calculateGrowthRate(data) {
+    if (!data || data.length < 2) return 0;
+    
+    const validData = data.filter(v => v !== null && v !== undefined && !isNaN(v));
+    if (validData.length < 2) return 0;
+    
+    const firstValue = validData[0];
+    const lastValue = validData[validData.length - 1];
+    
+    if (firstValue === 0) return 0;
+    
+    return ((lastValue - firstValue) / firstValue) * 100;
+}
+
+/**
+ * 計算中位數
+ * @param {Array} data - 數據陣列
+ * @returns {number} 中位數
+ */
+function calculateMedian(data) {
+    if (!data || data.length === 0) return 0;
+    
+    const validData = data
+        .filter(v => v !== null && v !== undefined && !isNaN(v))
+        .sort((a, b) => a - b);
+    
+    if (validData.length === 0) return 0;
+    
+    const mid = Math.floor(validData.length / 2);
+    
+    return validData.length % 2 === 0
+        ? (validData[mid - 1] + validData[mid]) / 2
+        : validData[mid];
+}
+
+/**
+ * 顯示數據統計資訊
+ */
+function showDataStatistics() {
+    console.log('📊 開始計算統計資訊...');
+    
+    if (!carbonChartData || !carbonChartData.datasets || carbonChartData.datasets.length === 0) {
+        console.warn('⚠️ 無圖表資料');
+        return;
+    }
+    
+    // 取得各數據集（排除預測數據）
+    const datasets = carbonChartData.datasets.filter(d => !d.isPrediction);
+    
+    if (datasets.length === 0) {
+        console.warn('⚠️ 無有效數據集');
+        return;
+    }
+    
+    // 計算派車GAI統計
+    const dispatchData = datasets[0]?.data || [];
+    const dispatchStats = {
+        total: calculateTotal(dispatchData),
+        avg: calculateAverage(dispatchData),
+        max: Math.max(...dispatchData.filter(v => v !== null && !isNaN(v))),
+        min: Math.min(...dispatchData.filter(v => v !== null && !isNaN(v))),
+        stdDev: calculateStdDev(dispatchData),
+        growth: calculateGrowthRate(dispatchData),
+        median: calculateMedian(dispatchData)
+    };
+    
+    // 計算運務GAI統計
+    const operationData = datasets[1]?.data || [];
+    const operationStats = {
+        total: calculateTotal(operationData),
+        avg: calculateAverage(operationData),
+        max: Math.max(...operationData.filter(v => v !== null && !isNaN(v))),
+        min: Math.min(...operationData.filter(v => v !== null && !isNaN(v))),
+        stdDev: calculateStdDev(operationData),
+        growth: calculateGrowthRate(operationData),
+        median: calculateMedian(operationData)
+    };
+    
+    // 計算託收托運GAI統計
+    const storageData = datasets[2]?.data || [];
+    const storageStats = {
+        total: calculateTotal(storageData),
+        avg: calculateAverage(storageData),
+        max: Math.max(...storageData.filter(v => v !== null && !isNaN(v))),
+        min: Math.min(...storageData.filter(v => v !== null && !isNaN(v))),
+        stdDev: calculateStdDev(storageData),
+        growth: calculateGrowthRate(storageData),
+        median: calculateMedian(storageData)
+    };
+    
+    // 計算營業額統計
+    const revenueData = datasets[3]?.data || [];
+    const revenueStats = {
+        total: calculateTotal(revenueData),
+        avg: calculateAverage(revenueData),
+        max: Math.max(...revenueData.filter(v => v !== null && !isNaN(v))),
+        min: Math.min(...revenueData.filter(v => v !== null && !isNaN(v))),
+        stdDev: calculateStdDev(revenueData),
+        growth: calculateGrowthRate(revenueData),
+        median: calculateMedian(revenueData)
+    };
+    
+    // 計算總碳排量（三個GAI相加）
+    const totalCarbonStats = {
+        total: (dispatchStats.total * 1000) + operationStats.total + storageStats.total,
+        avg:  (dispatchStats.avg * 1000) + operationStats.avg + storageStats.avg,
+        max: (dispatchStats.max * 1000) + operationStats.max + storageStats.max,
+        min: (dispatchStats.min * 1000) + operationStats.min + storageStats.min
+    };
+    
+    console.log('✅ 統計計算完成:', {
+        dispatch: dispatchStats,
+        operation: operationStats,
+        storage: storageStats,
+        revenue: revenueStats,
+        totalCarbon: totalCarbonStats
+    });
+    
+    // 顯示統計資訊
+    const statsContainer = document.getElementById('carbonStats');
+    if (!statsContainer) {
+        console.error('❌ 找不到 carbonStats 容器');
+        return;
+    }
+    
+    statsContainer.innerHTML = `
+        <!-- 總覽統計卡片 -->
+        <div class="stats-overview">
+            <div class="stat-card stat-card-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                         <div class="stat-content">
+                <span class="stat-label">總碳排量</span>
+                <span class="stat-value">${(totalCarbonStats.total / 1000).toFixed(2)}</span>
+                <span class="stat-unit">公噸</span>
+            </div>
+            </div>
+            
+            <div class="stat-card stat-card-success">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">平均碳排量</span>
+                    <span class="stat-value">${totalCarbonStats.avg.toFixed(2)}</span>
+                    <span class="stat-unit">公斤/天</span>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">單日最高值</span>
+                    <span class="stat-value">${totalCarbonStats.max.toFixed(2)}</span>
+                    <span class="stat-unit">公斤</span>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-info">
+                <div class="stat-icon">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">單日最低值</span>
+                    <span class="stat-value">${totalCarbonStats.min.toFixed(2)}</span>
+                    <span class="stat-unit">公斤</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 詳細統計表格 -->
+        <div class="stats-detail">
+            <h4 style="margin: 0 0 1rem 0; color: #1e293b; font-size: 1rem; font-weight: 600;">
+                <i class="fas fa-table"></i> 詳細統計資訊
+            </h4>
+            
+            <div class="stats-table-container">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>項目</th>
+                            <th>總計</th>
+                            <th>平均</th>
+                            <th>最大值</th>
+                            <th>最小值</th>
+                            <th>標準差</th>
+                            <th>中位數</th>
+                            <th>增長率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="table-label" style="color: #0ea5e9;">
+                                    <i class="fas fa-circle"></i> 派車GAI
+                                </span>
+                            </td>
+                            <td>${dispatchStats.total.toFixed(2)} t</td>
+                            <td>${dispatchStats.avg.toFixed(2)} t</td>
+                            <td>${dispatchStats.max.toFixed(2)} t</td>
+                            <td>${dispatchStats.min.toFixed(2)} t</td>
+                            <td>${dispatchStats.stdDev.toFixed(2)}</td>
+                            <td>${dispatchStats.median.toFixed(2)} t</td>
+                            <td class="${dispatchStats.growth >= 0 ? 'growth-positive' : 'growth-negative'}">
+                                ${dispatchStats.growth >= 0 ? '↑' : '↓'} ${Math.abs(dispatchStats.growth).toFixed(2)}%
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="table-label" style="color: #10b981;">
+                                    <i class="fas fa-circle"></i> 運務GAI
+                                </span>
+                            </td>
+                            <td>${operationStats.total.toFixed(2)} kg</td>
+                            <td>${operationStats.avg.toFixed(2)} kg</td>
+                            <td>${operationStats.max.toFixed(2)} kg</td>
+                            <td>${operationStats.min.toFixed(2)} kg</td>
+                            <td>${operationStats.stdDev.toFixed(2)}</td>
+                            <td>${operationStats.median.toFixed(2)} kg</td>
+                            <td class="${operationStats.growth >= 0 ? 'growth-positive' : 'growth-negative'}">
+                                ${operationStats.growth >= 0 ? '↑' : '↓'} ${Math.abs(operationStats.growth).toFixed(2)}%
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="table-label" style="color: #f59e0b;">
+                                    <i class="fas fa-circle"></i> 託收托運GAI
+                                </span>
+                            </td>
+                            <td>${storageStats.total.toFixed(2)} kg</td>
+                            <td>${storageStats.avg.toFixed(2)} kg</td>
+                            <td>${storageStats.max.toFixed(2)} kg</td>
+                            <td>${storageStats.min.toFixed(2)} kg</td>
+                            <td>${storageStats.stdDev.toFixed(2)}</td>
+                            <td>${storageStats.median.toFixed(2)} kg</td>
+                            <td class="${storageStats.growth >= 0 ? 'growth-positive' : 'growth-negative'}">
+                                ${storageStats.growth >= 0 ? '↑' : '↓'} ${Math.abs(storageStats.growth).toFixed(2)}%
+                            </td>
+                        </tr>
+                        <tr class="table-divider">
+                            <td>
+                                <span class="table-label" style="color: #ef4444;">
+                                    <i class="fas fa-circle"></i> 營業額
+                                </span>
+                            </td>
+                            <td>${revenueStats.total.toLocaleString()} 元</td>
+                            <td>${revenueStats.avg.toLocaleString()} 元</td>
+                            <td>${revenueStats.max.toLocaleString()} 元</td>
+                            <td>${revenueStats.min.toLocaleString()} 元</td>
+                            <td>${revenueStats.stdDev.toFixed(2)}</td>
+                            <td>${revenueStats.median.toLocaleString()} 元</td>
+                            <td class="${revenueStats.growth >= 0 ? 'growth-positive' : 'growth-negative'}">
+                                ${revenueStats.growth >= 0 ? '↑' : '↓'} ${Math.abs(revenueStats.growth).toFixed(2)}%
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 數據洞察 -->
+        <div class="stats-insights">
+            <h4 style="margin: 0 0 1rem 0; color: #1e293b; font-size: 1rem; font-weight: 600;">
+                <i class="fas fa-lightbulb"></i> 數據洞察
+            </h4>
+            <div class="insights-grid">
+                ${generateInsights(dispatchStats, operationStats, storageStats, revenueStats)}
+            </div>
+        </div>
+    `;
+    
+    // 添加動畫效果
+    statsContainer.style.display = 'block';
+    statsContainer.classList.add('fade-in');
+    
+    console.log('✅ 統計資訊顯示完成');
+}
+
+/**
+ * 生成數據洞察
+ */
+function generateInsights(dispatch, operation, storage, revenue) {
+    const insights = [];
+    
+    // 洞察 1: 最高碳排來源
+    const maxSource = Math.max(dispatch.total * 1000, operation.total, storage.total);
+    let maxSourceName = '';
+    if (maxSource === dispatch.total * 1000) maxSourceName = '派車GAI';
+    else if (maxSource === operation.total) maxSourceName = '運務GAI';
+    else maxSourceName = '託收托運GAI';
+    
+    insights.push(`
+        <div class="insight-card insight-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                <strong>主要碳排來源</strong>
+                <p>${maxSourceName} 佔總碳排量最高，建議優先優化此項目</p>
+            </div>
+        </div>
+    `);
+    
+    // 洞察 2: 增長趨勢
+    const totalGrowth = dispatch.growth + operation.growth + storage.growth;
+    if (totalGrowth > 10) {
+        insights.push(`
+            <div class="insight-card insight-danger">
+                <i class="fas fa-arrow-trend-up"></i>
+                <div>
+                    <strong>碳排增長警示</strong>
+                    <p>總體碳排量呈上升趨勢（${totalGrowth.toFixed(1)}%），需要採取減碳措施</p>
+                </div>
+            </div>
+        `);
+    } else if (totalGrowth < -10) {
+        insights.push(`
+            <div class="insight-card insight-success">
+                <i class="fas fa-arrow-trend-down"></i>
+                <div>
+                    <strong>減碳成效顯著</strong>
+                    <p>總體碳排量下降 ${Math.abs(totalGrowth).toFixed(1)}%，減碳措施有效</p>
+                </div>
+            </div>
+        `);
+    }
+    
+    // 洞察 3: 營收效率
+    const carbonPerRevenue = (dispatch.total + operation.total + storage.total) / revenue.total * 1000;
+    insights.push(`
+        <div class="insight-card insight-info">
+            <i class="fas fa-chart-pie"></i>
+            <div>
+                <strong>碳排效率</strong>
+                <p>每千元營收產生 ${carbonPerRevenue.toFixed(2)} kg 碳排量</p>
+            </div>
+        </div>
+    `);
+    
+    // 洞察 4: 波動性分析
+    const avgStdDev = (dispatch.stdDev + operation.stdDev + storage.stdDev) / 3;
+    if (avgStdDev > 50) {
+        insights.push(`
+            <div class="insight-card insight-warning">
+                <i class="fas fa-wave-square"></i>
+                <div>
+                    <strong>數據波動較大</strong>
+                    <p>碳排量波動明顯（標準差 ${avgStdDev.toFixed(2)}），建議穩定作業流程</p>
+                </div>
+            </div>
+        `);
+    }
+    
+    return insights.join('');
+}
+
+/**
+ * 切換統計顯示
+ */
+function toggleStatistics() {
+    const statsContainer = document.getElementById('carbonStats');
+    const toggleBtn = document.getElementById('toggleStatsBtn');
+    
+    if (!statsContainer) return;
+    
+    if (statsContainer.style.display === 'none' || !statsContainer.style.display) {
+        showDataStatistics();
+        if (toggleBtn) {
+            toggleBtn.innerHTML = '<i class="fas fa-chart-bar"></i> 隱藏統計';
+            toggleBtn.classList.add('active');
+        }
+    } else {
+        statsContainer.style.display = 'none';
+        if (toggleBtn) {
+            toggleBtn.innerHTML = '<i class="fas fa-chart-bar"></i> 顯示統計';
+            toggleBtn.classList.remove('active');
+        }
+    }
+}
+
+/**
+ * 匯出統計報告
+ */
+function exportStatisticsReport() {
+    if (!carbonChartData || !carbonChartData.datasets || carbonChartData.datasets.length === 0) {
+        if (window.app) app.showNotification('無資料可匯出', 'warning');
+        return;
+    }
+    
+    // 生成 CSV 內容
+    let csv = '碳排追蹤統計報告\n';
+    csv += `生成時間: ${new Date().toLocaleString('zh-TW')}\n\n`;
+    
+    csv += '項目,總計,平均,最大值,最小值,標準差,中位數,增長率\n';
+    
+    const datasets = carbonChartData.datasets.filter(d => !d.isPrediction);
+    
+    datasets.forEach((dataset, index) => {
+        const data = dataset.data;
+        const stats = {
+            total: calculateTotal(data),
+            avg: calculateAverage(data),
+            max: Math.max(...data.filter(v => v !== null && !isNaN(v))),
+            min: Math.min(...data.filter(v => v !== null && !isNaN(v))),
+            stdDev: calculateStdDev(data),
+            median: calculateMedian(data),
+            growth: calculateGrowthRate(data)
+        };
+        
+        csv += `${dataset.label},${stats.total.toFixed(2)},${stats.avg.toFixed(2)},${stats.max.toFixed(2)},${stats.min.toFixed(2)},${stats.stdDev.toFixed(2)},${stats.median.toFixed(2)},${stats.growth.toFixed(2)}%\n`;
+    });
+    
+    // 下載 CSV
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `碳排統計報告_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    if (window.app) app.showNotification('統計報告已匯出', 'success');
+}
+
+         // ===== 碳排追蹤折線圖功能 =====
+
+let carbonChartInstance = null;
+let carbonChartData = {
+    labels: [],
+    datasets: []
+};
+
+// 初始化圖表
+function initCarbonChart() {
+    const ctx = document.getElementById('carbonChart').getContext('2d');
+    
+    carbonChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: carbonChartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            family: 'Inter',
+                            size: 13,
+                            weight: '600'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#1e293b',
+                    bodyColor: '#475569',
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1,
+                    padding: 12,
+                    boxPadding: 6,
+                    usePointStyle: true,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toFixed(2) + ' ' + context.dataset.unit;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            family: 'Inter',
+                            size: 11
+                        }
+                    }
+                },
+                yLeft: {
+                    type: 'linear',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: '碳排量 (公斤/噸)',
+                        font: {
+                            family: 'Inter',
+                            size: 13,
+                            weight: '600'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        font: {
+                            family: 'Inter',
+                            size: 11
+                        }
+                    }
+                },
+                yRight: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: '營業額 (元)',
+                        font: {
+                            family: 'Inter',
+                            size: 13,
+                            weight: '600'
+                        }
+                    },
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            family: 'Inter',
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 載入碳排圖表資料 - GitHub Pages 版本（使用 fetch）
+ */
+async function loadCarbonChartData() {
+    // 1. 取得日期範圍
+    let startDate, endDate;
+    const rangeSelector = document.getElementById('carbonDateRange');
+    
+    if (rangeSelector.value === 'custom') {
+        startDate = document.getElementById('carbonStartDate')?.value;
+        endDate = document.getElementById('carbonEndDate')?.value;
+    } else {
+        // 自動計算日期
+        const today = new Date();
+        const days = parseInt(rangeSelector.value);
+        const start = new Date(today);
+        start.setDate(today.getDate() - days);
+        
+        startDate = start.toISOString().split('T')[0];
+        endDate = today.toISOString().split('T')[0];
+    }
+    
+    console.log('📊 開始載入碳排資料...');
+    console.log('📅 日期範圍:', startDate, '至', endDate);
+    
+    // 2. 驗證輸入
+    if (!startDate || !endDate) {
+        if (window.app) {
+            app.showNotification('請選擇日期範圍', 'warning');
+        }
+        return;
+    }
+    
+    if (new Date(startDate) > new Date(endDate)) {
+        if (window.app) {
+            app.showNotification('開始日期不能晚於結束日期', 'error');
+        }
+        return;
+    }
+    
+    // 3. 顯示載入狀態
+    document.getElementById('carbonChartSkeleton').style.display = 'block';
+    document.getElementById('carbonChartContainer').style.display = 'none';
+    
+    try {
+        // 4. 調用 API
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyF0Wz98V-oCbZlnGZxrcoTPRWnjtP3bFkrUBJQ4t8FLw2w3_kcK6Fu0YnIRKgTjR6hTg/exec';
+        const url = `${GOOGLE_SCRIPT_URL}?action=getCarbonChartData&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
+        
+        console.log('🌐 API 請求:', url);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('📦 API 回應:', result);
+        
+        if (result.success && result.data) {
+            console.log('✅ 成功取得資料');
+            console.log('📊 資料筆數:', result.data.dates?.length || 0);
+            
+            if (result.data.dates && result.data.dates.length > 0) {
+                updateCarbonChart(result.data);
+                if (window.app) {
+                    app.showNotification(`成功載入 ${result.data.dates.length} 筆資料`, 'success');
+                }
+            } else {
+                throw new Error('查無資料，請調整日期範圍');
+            }
+        } else {
+            throw new Error(result.error || 'API 回應格式錯誤');
+        }
+        
+    } catch (error) {
+        console.error('❌ 載入碳排資料失敗:', error);
+        
+        // 顯示錯誤訊息
+        const container = document.getElementById('carbonChartContainer');
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: #dc2626;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <h4>載入失敗</h4>
+                <p>${error.message}</p>
+                <button class="btn btn-primary" onclick="refreshCarbonChart()" style="margin-top: 1rem;">
+                    <i class="fas fa-sync-alt"></i> 重試
+                </button>
+            </div>
+        `;
+        
+        if (window.app) {
+            app.showNotification(`載入失敗: ${error.message}`, 'error');
+        }
+        
+    } finally {
+        // 隱藏載入狀態
+        document.getElementById('carbonChartSkeleton').style.display = 'none';
+        document.getElementById('carbonChartContainer').style.display = 'block';
+    }
+}
+
+
+
+// 更新圖表資料
+function updateCarbonChart(data) {
+    console.log('🎨 開始更新圖表...', data);
+    
+    carbonChartData.labels = data.dates;
+    carbonChartData.datasets = [
+        {
+            label: '派車GAI',
+            data: data.dispatch,
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            yAxisID: 'yLeft',
+            unit: '公斤'
+        },
+        {
+            label: '運務GAI',
+            data: data.operation,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            yAxisID: 'yLeft',
+            unit: '公斤'
+        },
+        {
+            label: '託收托運GAI',
+            data: data.storage,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            yAxisID: 'yLeft',
+            unit: '公斤'
+        },
+        {
+            label: '營業額',
+            data: data.revenue,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            yAxisID: 'yRight',
+            unit: '元'
+        }
+    ];
+    
+    if (carbonChartInstance) {
+        carbonChartInstance.data = carbonChartData;
+        carbonChartInstance.update();
+        
+        console.log('✅ 圖表更新完成');
+        
+        // ========== 🆕 新增：自動更新統計 ========== 
+        
+        // 如果統計面板已開啟，自動更新統計
+        const statsContainer = document.getElementById('carbonStats');
+        const toggleBtn = document.getElementById('toggleStatsBtn');
+        
+        if (statsContainer && statsContainer.style.display !== 'none') {
+            console.log('📊 統計面板已開啟，自動更新統計...');
+            // 延遲一下讓圖表先更新完成
+            setTimeout(() => {
+                showDataStatistics();
+            }, 300);
+        }
+        
+        // ========== 結束新增 ========== 
+        
+    } else {
+        console.error('❌ 圖表實例不存在');
+    }
+}
+
+
+// 切換趨勢線
+function toggleTrendLine(type) {
+    const checkbox = document.getElementById(`trend${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    const datasetIndex = {
+        'dispatch': 0,
+        'operation': 1,
+        'storage': 2,
+        'revenue': 3
+    }[type];
+    
+    if (checkbox.checked) {
+        // 計算趨勢線
+        const dataset = carbonChartData.datasets[datasetIndex];
+        const trendData = calculateTrendLine(dataset.data);
+        
+        // 新增趨勢線資料集
+        carbonChartData.datasets.push({
+            label: dataset.label + ' (趨勢)',
+            data: trendData,
+            borderColor: dataset.borderColor,
+            borderWidth: 2,
+            borderDash: [5, 5],
+            tension: 0,
+            yAxisID: dataset.yAxisID,
+            unit: dataset.unit,
+            pointRadius: 0
+        });
+    } else {
+        // 移除趨勢線
+        const trendLabel = carbonChartData.datasets[datasetIndex].label + ' (趨勢)';
+        const trendIndex = carbonChartData.datasets.findIndex(d => d.label === trendLabel);
+        if (trendIndex !== -1) {
+            carbonChartData.datasets.splice(trendIndex, 1);
+        }
+    }
+    
+    carbonChartInstance.update();
+}
+
+// 計算趨勢線（線性回歸）
+function calculateTrendLine(data) {
+    const n = data.length;
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    
+    for (let i = 0; i < n; i++) {
+        if (data[i] !== null) {
+            sumX += i;
+            sumY += data[i];
+            sumXY += i * data[i];
+            sumX2 += i * i;
+        }
+    }
+    
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+    
+    return data.map((_, i) => slope * i + intercept);
+}
+
+/**
+ * 預測未來趨勢（線性回歸）
+ * @param {Array} data - 歷史數據
+ * @param {number} days - 預測天數
+ * @returns {Array} 預測值陣列
+ */
+function predictFutureTrend(data, days = 7) {
+    console.log('🔮 開始預測未來趨勢...');
+    console.log('📊 歷史資料筆數:', data.length);
+    console.log('📅 預測天數:', days);
+    
+    // 過濾無效數據
+    const validData = data.filter(v => v !== null && v !== undefined && !isNaN(v));
+    
+    if (validData.length < 2) {
+        console.warn('⚠️ 資料不足，無法預測');
+        return [];
+    }
+    
+    // 計算線性回歸參數
+    const n = validData.length;
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    
+    for (let i = 0; i < n; i++) {
+        sumX += i;
+        sumY += validData[i];
+        sumXY += i * validData[i];
+        sumX2 += i * i;
+    }
+    
+    // 斜率和截距
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+    
+    console.log('📐 回歸參數 - 斜率:', slope.toFixed(4), '截距:', intercept.toFixed(4));
+    
+    // 計算預測值
+    const predictions = [];
+    const lastIndex = n - 1;
+    
+    for (let i = 1; i <= days; i++) {
+        const predictedValue = slope * (lastIndex + i) + intercept;
+        // 確保預測值不為負數
+        predictions.push(Math.max(0, predictedValue));
+    }
+    
+    console.log('✅ 預測完成:', predictions);
+    return predictions;
+}
+
+/**
+ * 生成未來日期標籤
+ * @param {string} lastDate - 最後一個日期
+ * @param {number} days - 天數
+ * @returns {Array} 日期陣列
+ */
+function generateFutureDates(lastDate, days) {
+    const dates = [];
+    const baseDate = new Date(lastDate);
+    
+    for (let i = 1; i <= days; i++) {
+        const futureDate = new Date(baseDate);
+        futureDate.setDate(baseDate.getDate() + i);
+        dates.push(futureDate.toISOString().split('T')[0]);
+    }
+    
+    return dates;
+}
+
+/**
+ * 添加預測數據到圖表
+ * @param {number} days - 預測天數
+ */
+function addPredictionToChart(days = 7) {
+    console.log('🎨 添加預測線到圖表...');
+    
+    if (!carbonChartInstance || !carbonChartData.labels || carbonChartData.labels.length === 0) {
+        console.error('❌ 圖表未初始化或無資料');
+        if (window.app) {
+            app.showNotification('請先載入歷史資料', 'warning');
+        }
+        return;
+    }
+    
+    // 移除舊的預測線
+    removePredictionFromChart();
+    
+    // 取得最後日期
+    const lastDate = carbonChartData.labels[carbonChartData.labels.length - 1];
+    const futureDates = generateFutureDates(lastDate, days);
+    
+    // 為每個數據集添加預測
+    const predictionDatasets = [];
+    const datasetConfigs = [
+        { index: 0, name: '派車GAI', color: '#0ea5e9', yAxisID: 'yLeft', unit: '公噸' },
+        { index: 1, name: '運務GAI', color: '#10b981', yAxisID: 'yLeft', unit: '公斤' },
+        { index: 2, name: '託收托運GAI', color: '#f59e0b', yAxisID: 'yLeft', unit: '公斤' },
+        { index: 3, name: '營業額', color: '#ef4444', yAxisID: 'yRight', unit: '元' }
+    ];
+    
+    datasetConfigs.forEach(config => {
+        const dataset = carbonChartData.datasets[config.index];
+        if (!dataset) return;
+        
+        // 預測未來值
+        const predictions = predictFutureTrend(dataset.data, days);
+        
+        if (predictions.length === 0) return;
+        
+        // 創建預測數據集（包含歷史最後一點作為連接）
+        const lastHistoricalValue = dataset.data[dataset.data.length - 1];
+        const predictionData = new Array(carbonChartData.labels.length - 1).fill(null);
+        predictionData.push(lastHistoricalValue);
+        predictionData.push(...predictions);
+        
+        predictionDatasets.push({
+            label: `${config.name} (預測)`,
+            data: predictionData,
+            borderColor: config.color,
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderDash: [10, 5],
+            tension: 0.4,
+            yAxisID: config.yAxisID,
+            unit: config.unit,
+            pointRadius: 4,
+            pointBackgroundColor: config.color,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            fill: false,
+            isPrediction: true // 標記為預測數據
+        });
+    });
+    
+    // 更新圖表標籤（添加未來日期）
+    carbonChartData.labels = [...carbonChartData.labels, ...futureDates];
+    
+    // 添加預測數據集
+    carbonChartData.datasets.push(...predictionDatasets);
+    
+    // 更新圖表
+    carbonChartInstance.update();
+    
+    console.log('✅ 預測線已添加');
+    
+    // 顯示預測資訊
+    showPredictionInfo(days);
+    
+    if (window.app) {
+        app.showNotification(`已添加 ${days} 天預測趨勢`, 'success');
+    }
+}
+
+/**
+ * 移除預測數據
+ */
+function removePredictionFromChart() {
+    if (!carbonChartInstance) return;
+    
+    console.log('🗑️ 移除預測線...');
+    
+    // 移除預測數據集
+    carbonChartData.datasets = carbonChartData.datasets.filter(dataset => !dataset.isPrediction);
+    
+    // 恢復原始標籤（移除未來日期）
+    const originalLabels = carbonChartData.labels.filter((label, index) => {
+        // 保留有實際數據的標籤
+        return carbonChartData.datasets[0].data[index] !== null;
+    });
+    
+    carbonChartData.labels = originalLabels;
+    
+    // 更新圖表
+    carbonChartInstance.update();
+    
+    // 隱藏預測資訊
+    const predictionInfo = document.getElementById('predictionInfo');
+    if (predictionInfo) {
+        predictionInfo.style.display = 'none';
+    }
+    
+    console.log('✅ 預測線已移除');
+}
+
+/**
+ * 顯示預測資訊
+ */
+function showPredictionInfo(days) {
+    const predictionInfo = document.getElementById('predictionInfo');
+    if (!predictionInfo) return;
+    
+    // 計算預測統計
+    const predictions = carbonChartData.datasets.filter(d => d.isPrediction);
+    if (predictions.length === 0) return;
+    
+    const dispatchPrediction = predictions[0].data.filter(v => v !== null);
+    const lastPrediction = dispatchPrediction[dispatchPrediction.length - 1];
+    const firstPrediction = dispatchPrediction[1]; // 第一個預測值（索引0是連接點）
+    
+    const trend = lastPrediction > firstPrediction ? '上升' : '下降';
+    const trendIcon = trend === '上升' ? '📈' : '📉';
+    const trendColor = trend === '上升' ? '#ef4444' : '#10b981';
+    
+    predictionInfo.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div style="font-size: 2rem;">${trendIcon}</div>
+            <div style="flex: 1;">
+                <div style="font-size: 0.875rem; opacity: 0.9;">未來 ${days} 天趨勢預測</div>
+                <div style="font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem;">
+                    預測趨勢：<span style="color: ${trendColor};">${trend}</span>
+                </div>
+                <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.5rem;">
+                    ⚠️ 預測僅供參考，實際值可能因多種因素而有所不同
+                </div>
+            </div>
+            <button onclick="removePredictionFromChart()" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s; font-size: 0.875rem;">
+                <i class="fas fa-times"></i> 移除預測
+            </button>
+        </div>
+    `;
+    
+    predictionInfo.style.display = 'block';
+}
+
+/**
+ * 切換預測顯示
+ */
+function togglePrediction() {
+    const checkbox = document.getElementById('showPrediction');
+    const daysInput = document.getElementById('predictionDays');
+    
+    if (!checkbox) return;
+    
+    if (checkbox.checked) {
+        const days = parseInt(daysInput?.value || 7);
+        addPredictionToChart(days);
+    } else {
+        removePredictionFromChart();
+    }
+}
+
+
+/**
+ * 重新整理圖表
+ */
+function refreshCarbonChart() {
+    console.log('🔄 重新整理碳排圖表...');
+    
+    // 移除預測線
+    const predictionCheckbox = document.getElementById('showPrediction');
+    if (predictionCheckbox && predictionCheckbox.checked) {
+        predictionCheckbox.checked = false;
+        removePredictionFromChart();
+    }
+    
+    // 重新載入資料
+    loadCarbonChartData();
+}
+
+
+// 日期範圍選擇器事件
+document.getElementById('carbonDateRange').addEventListener('change', function() {
+    const customRange = document.getElementById('customDateRange');
+    if (this.value === 'custom') {
+        customRange.style.display = 'flex';
+    } else {
+        customRange.style.display = 'none';
+        loadCarbonChartData();
+    }
+});
+
+// 自訂日期變更事件
+document.getElementById('startDate').addEventListener('change', loadCarbonChartData);
+document.getElementById('endDate').addEventListener('change', loadCarbonChartData);
+
+// 頁面載入時初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 載入 Chart.js
+    if (typeof Chart === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+        script.onload = function() {
+            initCarbonChart();
+            loadCarbonChartData();
+        };
+        document.head.appendChild(script);
+    } else {
+        initCarbonChart();
+        loadCarbonChartData();
+    }
+});
+
         // R2 角色控制類別
 class R2Character {
     constructor() {
@@ -4550,7 +6131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const CONFIG = {
             SPREADSHEET_ID: '1miCf_ZTVyzmA1MNbbZM3uUdZjluk99gZUH5w2q_XWs8',
             EXTERNAL_SPREADSHEET_ID: '1YMYLTvbAZjUxtOrtavzOCSTt0U5NfZN7S825TQmflbc', // 第二個檔案ID（外部資料、GAI分析等）
-            GAS_URL: 'https://script.google.com/macros/s/AKfycbxUnsRWZYmHN7hoi5aCDP6oIIZRT2M48UQihZ5orGR2_lStCW6y6kyIX2FN2BGol08Xiw/exec',
+            GAS_URL: 'https://script.google.com/macros/s/AKfycbyF0Wz98V-oCbZlnGZxrcoTPRWnjtP3bFkrUBJQ4t8FLw2w3_kcK6Fu0YnIRKgTjR6hTg/exec',
             USE_MOCK_DATA: false,
             MAPS_API_KEY: 'AIzaSyDtP8oDCXfr0CPLyVv_WrAqmk2V9QgteLI',
             WEATHER_API_KEY: 'a4806bc2577c0c227f9acd8bccb566a5',
@@ -7852,57 +9433,6 @@ refreshDeliveryReport() {
     }
 }
 
-// 執行外部 GAS 的 executeSteps1to5WithMemoryCleanup 程序（修正 CORS 版本）
-async executeSteps1to5WithMemoryCleanup() {
-    const externalGasUrl = 'https://script.google.com/macros/s/AKfycbzUERTOI-YGDJJ3_BjM4on4Sm0IZ-d4DRTssGtpQ6ZulKuyafKmwFf5mNE0lVifz_Y7mQ/exec';
-    
-    try {
-        // 先測試 GET 請求確認服務可用
-        console.log('測試外部 GAS 連線...');
-        const testResponse = await fetch(externalGasUrl, {
-            method: 'GET',
-            mode: 'no-cors', // 使用 no-cors 模式避免預檢請求
-        });
-        
-        console.log('連線測試完成，開始執行 POST 請求');
-        
-        const response = await fetch(externalGasUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain', // 改用 text/plain 避免預檢請求
-            },
-            body: JSON.stringify({
-                action: 'executeSteps1to5WithMemoryCleanup',
-                data: {
-                    timestamp: new Date().toISOString(),
-                    source: '昶青智慧冷鏈物流派車系統'
-                }
-            }),
-            mode: 'no-cors', // 使用 no-cors 模式
-        });
-        
-        console.log('POST 請求已發送');
-        
-        // 由於使用 no-cors 模式，無法讀取回應內容
-        // 但請求已經發送到外部 GAS
-        return {
-            success: true,
-            message: '外部程序執行請求已發送',
-            note: '由於 CORS 限制，無法確認執行結果，請檢查外部工作表'
-        };
-        
-    } catch (error) {
-        console.error('執行外部 executeSteps1to5WithMemoryCleanup 失敗:', error);
-        
-        // 提供更友善的錯誤訊息
-        if (error.name === 'TypeError') {
-            throw new Error('網路連線問題，請檢查網路狀態或稍後再試');
-        } else {
-            throw new Error(`外部程序執行失敗: ${error.message}`);
-        }
-    }
-}
-
 
 
 // 處理AI預排
@@ -9664,13 +11194,7 @@ async showRouteAddresses(routeName) {
                 // 載入頁面特定資料
                 this.loadPageData(pageName);
                 
-                // 如果切換到主控台頁面，自動顯示GAI秘書對話框
-                if (pageName === 'dashboard') {
-                    // 延遲1秒顯示，讓頁面切換動畫完成
-                    setTimeout(() => {
-                        this.showGAISecretaryModal();
-                    }, 1000);
-                }
+                
              }
 
 
@@ -9945,7 +11469,37 @@ async showRouteAddresses(routeName) {
 
 // 載入主控台資料 (修改版)
 async loadDashboard() {
-     this.showLoading('正在載入主控台資料...', true); // 允許互動
+    // 🔥 新增：先檢查快取（只在線上模式且非模擬資料時使用）
+    if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
+        const cachedData = DashboardCache.get();
+        
+        if (cachedData) {
+            console.log('⚡ 使用快取資料，立即顯示');
+            
+            // 立即更新 UI（使用快取資料）
+            document.getElementById('todayDeliveries').textContent = cachedData.routePalletSum;
+            document.getElementById('vehicleUsage').textContent = `${cachedData.routePalletNonZeroPercentage}%`;
+            document.getElementById('onTimeRate').textContent = cachedData.routeTableLastBValue;
+            document.getElementById('alertCount').textContent = cachedData.routeTableAlertValue;
+            
+            // 更新異常警示樣式
+            const alertElement = document.getElementById('alertCount');
+            if (cachedData.routeTableAlertValue > 2) {
+                alertElement.classList.add('alert');
+            } else {
+                alertElement.classList.remove('alert');
+            }
+            
+            // 顯示快取提示（可選）
+            this.showNotification('數據已驅動', 'info', 2000);
+            
+            return; // 直接返回，不再載入
+        }
+    }
+    
+    // 原本的載入邏輯（完全不變）
+    this.showLoading('正在載入主控台資料...', true);
+    
     try {
         let dashboardData;
         let routePalletSum = 0;
@@ -9955,10 +11509,10 @@ async loadDashboard() {
         
         if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
             dashboardData = this.getMockData('getDashboardData');
-            routePalletSum = 163; // 模擬資料
-            routePalletNonZeroPercentage = 10; // 模擬百分比
-            routeTableLastBValue = 7436.04; // 模擬路線表B欄位最後值
-            routeTableAlertValue = 2.01; // 模擬異常警示值 (7436.04 × 0.27 ÷ 1000)
+            routePalletSum = 163;
+            routePalletNonZeroPercentage = 10;
+            routeTableLastBValue = 7436.04;
+            routeTableAlertValue = 2.01;
             if (!this.isOnline) {
                 this.showNotification('目前使用離線模式', 'warning');
             }
@@ -10004,17 +11558,28 @@ async loadDashboard() {
                 routeTableLastBValue = 0;
                 routeTableAlertValue = 0;
             }
+            
+            // 🔥 新增：儲存到快取（只在線上模式且非模擬資料時）
+            if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
+                DashboardCache.set({
+                    routePalletSum,
+                    routePalletNonZeroPercentage,
+                    routeTableLastBValue,
+                    routeTableAlertValue
+                });
+                console.log('💾 資料已快取（30分鐘有效）');
+            }
         }
         
-        // 更新統計數據
+        // 更新統計數據（原本的邏輯）
         document.getElementById('todayDeliveries').textContent = routePalletSum;
         document.getElementById('vehicleUsage').textContent = `${routePalletNonZeroPercentage}%`;
         document.getElementById('onTimeRate').textContent = routeTableLastBValue;
-        document.getElementById('alertCount').textContent = routeTableAlertValue; // 顯示計算後的異常警示值
+        document.getElementById('alertCount').textContent = routeTableAlertValue;
 
-        // 根據異常警示值更新樣式
+        // 根據異常警示值更新樣式（原本的邏輯）
         const alertElement = document.getElementById('alertCount');
-        if (routeTableAlertValue > 2) { // 可以根據需要調整閾值
+        if (routeTableAlertValue > 2) {
             alertElement.classList.add('alert');
         } else {
             alertElement.classList.remove('alert');
@@ -10027,6 +11592,7 @@ async loadDashboard() {
         this.hideLoading();
     }
 }
+
 
 
 
@@ -10265,32 +11831,35 @@ async viewExternalRoute(routeName) {
                 `);
             }
 
-            // 刪除路線
-            async deleteRoute(routeId) {
-                if (!confirm('確定要刪除此路線嗎？此操作無法復原。')) {
-                    return;
-                }
+async deleteRoute(routeId) {
+    if (!confirm('確定要刪除此路線嗎？此操作無法復原。')) {
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        // 模擬刪除
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        this.showNotification('路線已刪除', 'success');
-                    } else {
-                        await this.apiCall('deleteRoute', { routeId });
-                        this.showNotification('路線已刪除', 'success');
-                    }
-                    
-                    // 重新載入路線列表
-                    await this.loadRouteManagement();
-                } catch (error) {
-                    console.error('刪除路線失敗:', error);
-                    this.showNotification('刪除路線失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+    this.showLoading();
+    try {
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            this.showNotification('路線已刪除', 'success');
+        } else {
+            await this.apiCall('deleteRoute', { routeId });
+            this.showNotification('路線已刪除', 'success');
+        }
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        await this.loadRouteManagement();
+    } catch (error) {
+        console.error('刪除路線失敗:', error);
+        this.showNotification('刪除路線失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 顯示新增路線模態視窗
             showAddRouteModal() {
@@ -10321,44 +11890,50 @@ async viewExternalRoute(routeName) {
             }
 
             // 新增路線
-            async addNewRoute() {
-                const routeName = document.getElementById('newRouteName').value.trim();
-                const startPoint = document.getElementById('newStartPoint').value.trim();
-                const endPoint = document.getElementById('newEndPoint').value.trim();
-                const stopPoints = document.getElementById('newStopPoints').value.trim().split('\n').filter(p => p.trim());
-                const estimatedTime = parseInt(document.getElementById('newEstimatedTime').value);
+           async addNewRoute() {
+    const routeName = document.getElementById('newRouteName').value.trim();
+    const startPoint = document.getElementById('newStartPoint').value.trim();
+    const endPoint = document.getElementById('newEndPoint').value.trim();
+    const stopPoints = document.getElementById('newStopPoints').value.trim().split('\n').filter(p => p.trim());
+    const estimatedTime = parseInt(document.getElementById('newEstimatedTime').value);
 
-                if (!routeName || !startPoint || !endPoint) {
-                    this.showNotification('請填寫必要欄位', 'warning');
-                    return;
-                }
+    if (!routeName || !startPoint || !endPoint) {
+        this.showNotification('請填寫必要欄位', 'warning');
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        // 模擬新增
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        this.showNotification('路線新增成功', 'success');
-                    } else {
-                        await this.apiCall('addRoute', {
-                            name: routeName,
-                            startPoint,
-                            endPoint,
-                            stopPoints,
-                            estimatedTime
-                        });
-                        this.showNotification('路線新增成功', 'success');
-                    }
-                    
-                    this.hideModal();
-                    await this.loadRouteManagement();
-                } catch (error) {
-                    console.error('新增路線失敗:', error);
-                    this.showNotification('新增路線失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+    this.showLoading();
+    try {
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            // 模擬新增
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            this.showNotification('路線新增成功', 'success');
+        } else {
+            await this.apiCall('addRoute', {
+                name: routeName,
+                startPoint,
+                endPoint,
+                stopPoints,
+                estimatedTime
+            });
+            this.showNotification('路線新增成功', 'success');
+        }
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        this.hideModal();
+        await this.loadRouteManagement();
+    } catch (error) {
+        console.error('新增路線失敗:', error);
+        this.showNotification('新增路線失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 顯示批量匯入模態視窗
             showImportRoutesModal() {
@@ -10626,74 +12201,85 @@ async viewExternalRoute(routeName) {
             }
 
             // 執行緊急調派
-            async executeEmergencyDispatch() {
-                const emergencyType = document.getElementById('emergencyType').value;
-                const location = document.getElementById('emergencyLocation').value.trim();
-                const description = document.getElementById('emergencyDescription').value.trim();
-                const priority = document.getElementById('emergencyPriority').value;
+async executeEmergencyDispatch() {
+    const emergencyType = document.getElementById('emergencyType').value;
+    const location = document.getElementById('emergencyLocation').value.trim();
+    const description = document.getElementById('emergencyDescription').value.trim();
+    const priority = document.getElementById('emergencyPriority').value;
 
-                if (!emergencyType || !location || !description) {
-                    this.showNotification('請填寫所有必要欄位', 'warning');
-                    return;
-                }
+    if (!emergencyType || !location || !description) {
+        this.showNotification('請填寫所有必要欄位', 'warning');
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    let result;
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        result = this.getMockData('emergencyDispatch');
-                    } else {
-                        result = await this.apiCall('emergencyDispatch', {
-                            type: emergencyType,
-                            location,
-                            description,
-                            priority
-                        });
-                    }
+    this.showLoading();
+    try {
+        let result;
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            result = this.getMockData('emergencyDispatch');
+        } else {
+            result = await this.apiCall('emergencyDispatch', {
+                type: emergencyType,
+                location,
+                description,
+                priority
+            });
+        }
 
-                    this.hideModal();
-                    this.showNotification(`緊急調派已啟動！預計 ${result.estimatedResponse} 內到達`, 'success');
-                    
-                    // 更新主控台警示數量
-                    const alertCount = document.getElementById('alertCount');
-                    const currentCount = parseInt(alertCount.textContent) || 0;
-                    alertCount.textContent = currentCount + 1;
-                    alertCount.classList.add('alert');
-                    
-                } catch (error) {
-                    console.error('緊急調派失敗:', error);
-                    this.showNotification('緊急調派失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+        this.hideModal();
+        this.showNotification(`緊急調派已啟動！預計 ${result.estimatedResponse} 內到達`, 'success');
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        // 更新主控台警示數量
+        const alertCount = document.getElementById('alertCount');
+        const currentCount = parseInt(alertCount.textContent) || 0;
+        alertCount.textContent = currentCount + 1;
+        alertCount.classList.add('alert');
+        
+    } catch (error) {
+        console.error('緊急調派失敗:', error);
+        this.showNotification('緊急調派失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 路線重規劃
-            async rerouteAllVehicles() {
-                if (!confirm('確定要重新規劃所有車輛路線嗎？這可能需要幾分鐘時間。')) {
-                    return;
-                }
+async rerouteAllVehicles() {
+    if (!confirm('確定要重新規劃所有車輛路線嗎？這可能需要幾分鐘時間。')) {
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        // 模擬重規劃過程
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        this.showNotification('所有車輛路線重規劃完成', 'success');
-                    } else {
-                        await this.apiCall('rerouteAllVehicles');
-                        this.showNotification('所有車輛路線重規劃完成', 'success');
-                    }
-                    
-                    // 重新載入主控台資料
-                    await this.loadDashboard();
-                } catch (error) {
-                    console.error('路線重規劃失敗:', error);
-                    this.showNotification('路線重規劃失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+    this.showLoading();
+    try {
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            this.showNotification('所有車輛路線重規劃完成', 'success');
+        } else {
+            await this.apiCall('rerouteAllVehicles');
+            this.showNotification('所有車輛路線重規劃完成', 'success');
+        }
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        // 重新載入主控台資料
+        await this.loadDashboard();
+    } catch (error) {
+        console.error('路線重規劃失敗:', error);
+        this.showNotification('路線重規劃失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 顯示即時改道模態視窗
             showRealTimeRerouteModal() {
@@ -10727,39 +12313,44 @@ async viewExternalRoute(routeName) {
                 });
             }
 
-            // 執行即時改道
-            async executeRealTimeReroute() {
-                const vehicleId = document.getElementById('rerouteVehicle').value;
-                const reason = document.getElementById('rerouteReason').value;
-                const notes = document.getElementById('rerouteNotes').value.trim();
+async executeRealTimeReroute() {
+    const vehicleId = document.getElementById('rerouteVehicle').value;
+    const reason = document.getElementById('rerouteReason').value;
+    const notes = document.getElementById('rerouteNotes').value.trim();
 
-                if (!vehicleId || !reason) {
-                    this.showNotification('請填寫必要欄位', 'warning');
-                    return;
-                }
+    if (!vehicleId || !reason) {
+        this.showNotification('請填寫必要欄位', 'warning');
+        return;
+    }
 
-                this.showLoading();
-                try {
-                    if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        this.showNotification('即時改道指令已發送', 'success');
-                    } else {
-                        await this.apiCall('realTimeReroute', {
-                            vehicleId,
-                            reason,
-                            notes
-                        });
-                        this.showNotification('即時改道指令已發送', 'success');
-                    }
-                    
-                    this.hideModal();
-                } catch (error) {
-                    console.error('即時改道失敗:', error);
-                    this.showNotification('即時改道失敗', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            }
+    this.showLoading();
+    try {
+        if (CONFIG.USE_MOCK_DATA || !this.isOnline) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            this.showNotification('即時改道指令已發送', 'success');
+        } else {
+            await this.apiCall('realTimeReroute', {
+                vehicleId,
+                reason,
+                notes
+            });
+            this.showNotification('即時改道指令已發送', 'success');
+        }
+        
+        // 🔥 新增：清除主控台快取
+        if (typeof DashboardCache !== 'undefined') {
+            DashboardCache.clear();
+        }
+        
+        this.hideModal();
+    } catch (error) {
+        console.error('即時改道失敗:', error);
+        this.showNotification('即時改道失敗', 'error');
+    } finally {
+        this.hideLoading();
+    }
+}
+
 
             // 初始化工作表
             async initializeSheets() {
@@ -12140,6 +13731,7 @@ function collapseAllRoutes() {
     });
 }
 
+       
     </script>
 <!-- 任務進度覆蓋層：步驟條 + 取消 -->
 <div id="taskProgressOverlay" class="task-progress-overlay" style="display:none;">
@@ -12208,7 +13800,7 @@ function collapseAllRoutes() {
         </div>
     </div>
 </div>
-
+<script src="cache-manager.js"></script>
    
 </body>
 </html>
