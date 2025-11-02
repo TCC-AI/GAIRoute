@@ -11531,31 +11531,34 @@ async showRouteAddresses(routeName) {
 
 // 載入主控台資料 (修改版)
 async loadDashboard() {
-    // 🔥 新增：先檢查快取（只在線上模式且非模擬資料時使用）
+    // 檢查快取
     if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
-        const cachedData = DashboardCache.get();
+        const cached = DashboardCache.get();  // 👈 改名為 cached
         
-        if (cachedData) {
+        if (cached && cached.data) {  // 👈 檢查 cached.data
             console.log('⚡ 使用快取資料，立即顯示');
             
-            // 立即更新 UI（使用快取資料）
-            document.getElementById('todayDeliveries').textContent = cachedData.routePalletSum;
-            document.getElementById('vehicleUsage').textContent = `${cachedData.routePalletNonZeroPercentage}%`;
-            document.getElementById('onTimeRate').textContent = cachedData.routeTableLastBValue;
-            document.getElementById('alertCount').textContent = cachedData.routeTableAlertValue;
+            const data = cached.data;  // 👈 取出 data 物件
+            
+            // 立即更新 UI
+            document.getElementById('todayDeliveries').textContent = data.routePalletSum || 0;
+            document.getElementById('vehicleUsage').textContent = `${data.routePalletNonZeroPercentage || 0}%`;
+            document.getElementById('onTimeRate').textContent = data.routeTableLastBValue || 0;
+            document.getElementById('alertCount').textContent = data.routeTableAlertValue || 0;
             
             // 更新異常警示樣式
             const alertElement = document.getElementById('alertCount');
-            if (cachedData.routeTableAlertValue > 2) {
+            if (data.routeTableAlertValue > 2) {
                 alertElement.classList.add('alert');
             } else {
                 alertElement.classList.remove('alert');
             }
             
-            // 顯示快取提示（可選）
-            this.showNotification('數據已驅動', 'info', 2000);
+            // 👇 更新時間戳
+            updateDashboardTimestamp(cached.ts);
             
-            return; // 直接返回，不再載入
+            this.showNotification('數據已驅動', 'info', 2000);
+            return;
         }
     }
     
@@ -11654,11 +11657,6 @@ async loadDashboard() {
         this.hideLoading();
     }
 }
-
-
-
-
-
 
             // 載入路線管理資料
             async loadRouteManagement() {
