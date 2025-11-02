@@ -8488,24 +8488,7 @@ class TaskProgressManager {
 const TaskProgress = new TaskProgressManager();
 
 /* ============== Dashboard 快取 + Timestamp ============== */
-const DashboardCache = {
-  key: 'dashboardAggCache_v1',
-  set(data){
-    localStorage.setItem(this.key, JSON.stringify({
-      ts: Date.now(),
-      data
-    }));
-  },
-  get(){
-    try {
-      const raw = localStorage.getItem(this.key);
-      if(!raw) return null;
-      return JSON.parse(raw);
-    } catch(e){
-      return null;
-    }
-  }
-};
+
 
 function formatTime(ts){
   const d = new Date(ts);
