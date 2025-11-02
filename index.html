@@ -8553,15 +8553,15 @@ DispatchGAISystem.prototype.loadDashboard = async function(){
     await originalLoadDashboard.apply(this);
     // 3. 把最新資料打包寫入快取
     try {
-    const latest = {
+      const latest = {
         pallets: parseFloat(document.getElementById('todayDeliveries').textContent) || 0,
-        nonZeroPct: parseFloat(document.getElementById('vehicleUsage').textContent) || 0,  // ✅ 大寫 Z
+        nonZeroPct: parseFloat(document.getElementById('vehicleUsage').textContent) || 0,
         lostB: document.getElementById('onTimeRate').textContent,
         alert: document.getElementById('alertCount').textContent
-    };
-    DashboardCache.set(latest);
-    this.applyDashboardUpdate(latest);
-} catch(e){}
+      };
+      DashboardCache.set(latest);
+      this.applyDashboardUpdate(latest);
+    } catch(e){}
   } catch(e){
     console.warn('載入儀表板失敗(含快取邏輯):',e);
   } finally {
@@ -11622,24 +11622,22 @@ async loadDashboard() {
             }
             
            // 🔥 新增：儲存到快取（只在線上模式且非模擬資料時）
-// ✅ 修正後的代碼
-if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
-    console.log('🔍 準備儲存的資料:', {
-        routePalletSum,
-        routePalletNonZeroPercentage,
-        routeTableLastBValue,
-        routeTableAlertValue
-    });
-    
-    DashboardCache.set({
-        pallets: routePalletSum || 0,
-        nonZeroPct: routePalletNonZeroPercentage || 0,  // ✅ 改成 nonZeroPct（大寫 Z）
-        lostB: routeTableLastBValue || "",
-        alert: routeTableAlertValue || ""
-    });
-    console.log('💾 資料已快取（30分鐘有效）');
-}
-
+        if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
+            console.log('🔍 準備儲存的資料:', {
+                routePalletSum,
+                routePalletNonZeroPercentage,
+                routeTableLastBValue,
+                routeTableAlertValue
+            });
+            
+            DashboardCache.set({
+                pallets: routePalletSum || 0,
+                nonzeroPct: routePalletNonZeroPercentage || 0,
+                lostB: routeTableLastBValue || "",
+                alert: routeTableAlertValue || ""
+            });
+            console.log('💾 資料已快取（30分鐘有效）');
+        }
 
         }
         
