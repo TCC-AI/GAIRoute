@@ -11469,9 +11469,6 @@ async showRouteAddresses(routeName) {
 
 // 載入主控台資料 (修改版)
 async loadDashboard() {
-    // 檢查 DashboardCache 是否存在
-    if (typeof DashboardCache !== 'undefined' && !CONFIG.USE_MOCK_DATA && this.isOnline) {
-        const cachedData = DashboardCache.get();
     // 🔥 新增：先檢查快取（只在線上模式且非模擬資料時使用）
     if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
         const cachedData = DashboardCache.get();
