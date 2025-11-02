@@ -11563,20 +11563,21 @@ async loadDashboard() {
             // 🔥 新增：儲存到快取（只在線上模式且非模擬資料時）
             if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
                 DashboardCache.set({
-                    routePalletSum,
-                    routePalletNonZeroPercentage,
-                    routeTableLastBValue,
-                    routeTableAlertValue
-                });
+                pallets: routePalletSum,
+                nonZeroPct: routePalletNonZeroPercentage,
+                lastB: routeTableLastBValue,
+                alert: routeTableAlertValue
+            });
                 console.log('💾 資料已快取（30分鐘有效）');
             }
         }
         
         // 更新統計數據（原本的邏輯）
-        document.getElementById('todayDeliveries').textContent = routePalletSum;
-        document.getElementById('vehicleUsage').textContent = `${routePalletNonZeroPercentage}%`;
-        document.getElementById('onTimeRate').textContent = routeTableLastBValue;
-        document.getElementById('alertCount').textContent = routeTableAlertValue;
+        const data = cached.data;
+        document.getElementById('todayDeliveries').textContent = data.pallets || 0;
+        document.getElementById('vehicleUsage').textContent = `${data.nonZeroPct || 0}%`;
+        document.getElementById('onTimeRate').textContent = data.lastB || 0;
+        document.getElementById('alertCount').textContent = data.alert || 0;
 
         // 根據異常警示值更新樣式（原本的邏輯）
         const alertElement = document.getElementById('alertCount');
