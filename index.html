@@ -11538,11 +11538,11 @@ async loadDashboard() {
         if (cachedData) {
             console.log('⚡ 使用快取資料，立即顯示');
             
-            // 立即更新 UI（使用快取資料）
-            document.getElementById('todayDeliveries').textContent = cachedData.routePalletSum;
-            document.getElementById('vehicleUsage').textContent = `${cachedData.routePalletNonZeroPercentage}%`;
-            document.getElementById('onTimeRate').textContent = cachedData.routeTableLastBValue;
-            document.getElementById('alertCount').textContent = cachedData.routeTableAlertValue;
+            // 🔥 使用正確的欄位名稱
+    document.getElementById('todayDeliveries').textContent = cachedData.data.pallets;
+    document.getElementById('vehicleUsage').textContent = `${cachedData.data.nonzeroPct}%`;
+    document.getElementById('onTimeRate').textContent = cachedData.data.lostB;
+    document.getElementById('alertCount').textContent = cachedData.data.alert;
             
             // 更新異常警示樣式
             const alertElement = document.getElementById('alertCount');
