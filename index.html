@@ -4557,48 +4557,6 @@ justify-content:flex-end; /* 右靠齊 */
     </div>
 
     <script>
-        /* ============== Dashboard 快取 + Timestamp ============== */
-const DashboardCache = {
-  key: 'dashboardAggCache_v1',
-  set(data){
-    localStorage.setItem(this.key, JSON.stringify({
-      ts: Date.now(),
-      data
-    }));
-  },
-  get(){
-    try {
-      const raw = localStorage.getItem(this.key);
-      if(!raw) return null;
-      return JSON.parse(raw);
-    } catch(e){
-      return null;
-    }
-  }
-};
-
-function formatTime(ts){
-  const d = new Date(ts);
-  return d.toLocaleTimeString('zh-TW',{hour12:false});
-}
-
-function updateDashboardTimestamp(ts){
-  const timeEl = document.getElementById('dashboardTimestamp');
-  const badge = document.getElementById('dashboardFreshBadge');
-  if(!timeEl || !badge) return;
-  timeEl.textContent = '資料時間 ' + formatTime(ts);
-  const ageSec = (Date.now()-ts)/1000;
-  badge.classList.remove('stale','expired');
-  if (ageSec < 60){
-    badge.textContent='最新';
-  } else if (ageSec < 180){
-    badge.textContent='稍舊';
-    badge.classList.add('stale');
-  } else {
-    badge.textContent='過期';
-    badge.classList.add('expired');
-  }
-}
         // ==================== 數據統計分析功能 ====================
 
 /**
@@ -8440,7 +8398,48 @@ class TaskProgressManager {
 
 const TaskProgress = new TaskProgressManager();
 
+/* ============== Dashboard 快取 + Timestamp ============== */
+const DashboardCache = {
+  key: 'dashboardAggCache_v1',
+  set(data){
+    localStorage.setItem(this.key, JSON.stringify({
+      ts: Date.now(),
+      data
+    }));
+  },
+  get(){
+    try {
+      const raw = localStorage.getItem(this.key);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    } catch(e){
+      return null;
+    }
+  }
+};
 
+function formatTime(ts){
+  const d = new Date(ts);
+  return d.toLocaleTimeString('zh-TW',{hour12:false});
+}
+
+function updateDashboardTimestamp(ts){
+  const timeEl = document.getElementById('dashboardTimestamp');
+  const badge = document.getElementById('dashboardFreshBadge');
+  if(!timeEl || !badge) return;
+  timeEl.textContent = '資料時間 ' + formatTime(ts);
+  const ageSec = (Date.now()-ts)/1000;
+  badge.classList.remove('stale','expired');
+  if (ageSec < 60){
+    badge.textContent='最新';
+  } else if (ageSec < 180){
+    badge.textContent='稍舊';
+    badge.classList.add('stale');
+  } else {
+    badge.textContent='過期';
+    badge.classList.add('expired');
+  }
+}
 
 /* ========= 儀表板顯示快取優先 → 再淡入更新 ========= */
 DispatchGAISystem.prototype.renderDashboardFast = function(cached){
