@@ -11621,16 +11621,24 @@ async loadDashboard() {
                 routeTableAlertValue = 0;
             }
             
-            // 🔥 新增：儲存到快取（只在線上模式且非模擬資料時）
-            if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
-                DashboardCache.set({
-                    routePalletSum,
-                    routePalletNonZeroPercentage,
-                    routeTableLastBValue,
-                    routeTableAlertValue
-                });
-                console.log('💾 資料已快取（30分鐘有效）');
-            }
+           // 🔥 新增：儲存到快取（只在線上模式且非模擬資料時）
+        if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
+            console.log('🔍 準備儲存的資料:', {
+                routePalletSum,
+                routePalletNonZeroPercentage,
+                routeTableLastBValue,
+                routeTableAlertValue
+            });
+            
+            DashboardCache.set({
+                pallets: routePalletSum || 0,
+                nonzeroPct: routePalletNonZeroPercentage || 0,
+                lostB: routeTableLastBValue || "",
+                alert: routeTableAlertValue || ""
+            });
+            console.log('💾 資料已快取（30分鐘有效）');
+        }
+
         }
         
         // 更新統計數據（原本的邏輯）
