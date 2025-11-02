@@ -6733,6 +6733,95 @@ refreshRouteTableC() {
             connectionStatus: document.getElementById('connectionStatus')
         };
 
+        // ==================== 儀表板快取管理類別 ====================
+class DashboardCache {
+    constructor() {
+        this.cacheKey = 'dashboard_data_cache';
+        this.maxAge = 600000; // 10分鐘快取有效期
+    }
+
+    /**
+     * 獲取快取資料
+     */
+    get() {
+        try {
+            const cached = localStorage.getItem(this.cacheKey);
+            if (!cached) return null;
+
+            const data = JSON.parse(cached);
+            const now = Date.now();
+
+            // 檢查快取是否過期
+            if (now - data.timestamp > this.maxAge) {
+                this.clear();
+                return null;
+            }
+
+            console.log('✅ 使用快取資料', {
+                age: Math.round((now - data.timestamp) / 1000) + '秒',
+                data: data.value
+            });
+
+            return data.value;
+        } catch (error) {
+            console.error('讀取快取失敗:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 設定快取資料
+     */
+    set(value) {
+        try {
+            const data = {
+                value: value,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(this.cacheKey, JSON.stringify(data));
+            console.log('✅ 快取已更新');
+        } catch (error) {
+            console.error('設定快取失敗:', error);
+        }
+    }
+
+    /**
+     * 清除快取
+     */
+    clear() {
+        try {
+            localStorage.removeItem(this.cacheKey);
+            console.log('🗑️ 快取已清除');
+        } catch (error) {
+            console.error('清除快取失敗:', error);
+        }
+    }
+
+    /**
+     * 檢查快取是否有效
+     */
+    isValid() {
+        const cached = this.get();
+        return cached !== null;
+    }
+
+    /**
+     * 獲取快取年齡（秒）
+     */
+    getAge() {
+        try {
+            const cached = localStorage.getItem(this.cacheKey);
+            if (!cached) return null;
+
+            const data = JSON.parse(cached);
+            return Math.round((Date.now() - data.timestamp) / 1000);
+        } catch (error) {
+            return null;
+        }
+    }
+}
+
+
         // 應用程式類別
         class DispatchGAISystem {
             constructor() {
