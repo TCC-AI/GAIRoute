@@ -6733,23 +6733,81 @@ refreshRouteTableC() {
             connectionStatus: document.getElementById('connectionStatus')
         };
 
-        /* ============== Dashboard 快取 + Timestamp ============== */
+      
+/* ============== Dashboard 快取 + Timestamp ============== */
 const DashboardCache = {
   key: 'dashboardAggCache_v1',
+  
+  // ⭐ 可在這裡調整快取時間（分鐘）
+  config: {
+    ttlMinutes: 30  // 預設 30 分鐘，可改為 5, 10, 15 等
+  },
+  
+  getTTL(){
+    return this.config.ttlMinutes * 60 * 1000;
+  },
+  
   set(data){
     localStorage.setItem(this.key, JSON.stringify({
       ts: Date.now(),
       data
     }));
+    console.log(`💾 資料已快取 (${this.config.ttlMinutes}分鐘有效)`);
   },
+  
   get(){
     try {
       const raw = localStorage.getItem(this.key);
       if(!raw) return null;
-      return JSON.parse(raw);
+      
+      const parsed = JSON.parse(raw);
+      const age = Date.now() - parsed.ts;
+      const ttl = this.getTTL();
+      
+      if (age > ttl) {
+        const ageMinutes = Math.floor(age / 60000);
+        console.log(`⏰ 快取已過期 (${ageMinutes}分鐘前，TTL: ${this.config.ttlMinutes}分鐘)`);
+        localStorage.removeItem(this.key);
+        return null;
+      }
+      
+      const ageSeconds = Math.floor(age / 1000);
+      console.log(`✅ 快取有效 (${ageSeconds}秒前，TTL: ${this.config.ttlMinutes}分鐘)`);
+      return parsed;
+      
     } catch(e){
+      console.error('❌ 讀取快取失敗:', e);
       return null;
     }
+  },
+  
+  // ⭐ 新增：手動設定 TTL
+  setTTL(minutes){
+    this.config.ttlMinutes = minutes;
+    console.log(`⚙️ 快取時間已設定為 ${minutes} 分鐘`);
+  },
+  
+  // ⭐ 新增：查看快取狀態
+  getStatus(){
+    const cached = this.get();
+    if (!cached) {
+      return { valid: false, message: '無快取資料' };
+    }
+    
+    const age = Date.now() - cached.ts;
+    const ttl = this.getTTL();
+    const remaining = ttl - age;
+    
+    return {
+      valid: true,
+      ageSeconds: Math.floor(age / 1000),
+      ageMinutes: Math.floor(age / 60000),
+      remainingSeconds: Math.floor(remaining / 1000),
+      remainingMinutes: Math.floor(remaining / 60000),
+      ttlMinutes: this.config.ttlMinutes,
+      createdAt: new Date(cached.ts).toLocaleString('zh-TW'),
+      expiresAt: new Date(cached.ts + ttl).toLocaleString('zh-TW')
+    };
   }
 };
 
@@ -6762,8 +6820,10 @@ function updateDashboardTimestamp(ts){
   const timeEl = document.getElementById('dashboardTimestamp');
   const badge = document.getElementById('dashboardFreshBadge');
   if(!timeEl || !badge) return;
+  
   timeEl.textContent = '資料時間 ' + formatTime(ts);
   const ageSec = (Date.now()-ts)/1000;
+  
   badge.classList.remove('stale','expired');
   if (ageSec < 60){
     badge.textContent='最新';
@@ -6775,6 +6835,7 @@ function updateDashboardTimestamp(ts){
     badge.classList.add('expired');
   }
 }
+
 
         // 應用程式類別
         class DispatchGAISystem {
