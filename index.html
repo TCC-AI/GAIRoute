@@ -6740,7 +6740,7 @@ const DashboardCache = {
   
   // ⭐ 可在這裡調整快取時間（分鐘）
   config: {
-    ttlMinutes: 5  // 預設 30 分鐘，可改為 5, 10, 15 等
+    ttlMinutes: 30  // 預設 30 分鐘，可改為 5, 10, 15 等
   },
   
   getTTL(){
@@ -8855,57 +8855,45 @@ document.getElementById('debugRouteData')?.addEventListener('click', async () =>
             }
 
             // 處理登入
-// 處理登入
-async handleLogin() {
-    const username = elements.username.value.trim();
-    const password = elements.password.value.trim();
+            async handleLogin() {
+                const username = elements.username.value.trim();
+                const password = elements.password.value.trim();
 
-    if (!username || !password) {
-        this.showLoginError('請輸入帳號和密碼');
-        return;
-    }
+                if (!username || !password) {
+                    this.showLoginError('請輸入帳號和密碼');
+                    return;
+                }
 
-    elements.loginBtn.disabled = true;
-    elements.loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登入中...';
+                elements.loginBtn.disabled = true;
+                elements.loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登入中...';
 
-    try {
-        const loginResult = await this.authenticateUser(username, password);
-        
-        if (loginResult.success) {
-            currentUser = loginResult.user;
-            this.isLoggedIn = true;
-            
-            // 儲存登入狀態
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            
-            // 🔥 登入成功，清除所有快取
-            console.log('🧹 登入成功，清除所有快取');
-            if (typeof DashboardCache !== 'undefined') {
-                DashboardCache.clear();
+                try {
+                    const loginResult = await this.authenticateUser(username, password);
+                    
+                    if (loginResult.success) {
+                        currentUser = loginResult.user;
+                        this.isLoggedIn = true;
+                        
+                        // 儲存登入狀態
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        
+                        // 更新最後登入時間
+                        await this.updateLastLoginTime(username);
+                        
+                        this.showMainSystem();
+                        this.initializeMainSystem();
+                        this.showNotification(`歡迎回來，${currentUser.name}！`, 'success');
+                    } else {
+                        this.showLoginError(loginResult.message || '登入失敗');
+                    }
+                } catch (error) {
+                    console.error('登入錯誤:', error);
+                    this.showLoginError('登入時發生錯誤，請稍後再試');
+                } finally {
+                    elements.loginBtn.disabled = false;
+                    elements.loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登入';
+                }
             }
-            if (typeof CacheManager !== 'undefined') {
-                CacheManager.clear();
-            }
-            
-            // 更新最後登入時間
-            await this.updateLastLoginTime(username);
-            
-            this.showMainSystem();
-            this.initializeMainSystem();
-            this.showNotification(`歡迎回來，${currentUser.name}！`, 'success');
-        } else {
-            this.showLoginError(loginResult.message || '登入失敗');
-        }
-    } catch (error) {
-        console.error('登入錯誤:', error);
-        this.showLoginError('登入時發生錯誤，請稍後再試');
-    } finally {
-        elements.loginBtn.disabled = false;
-        elements.loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登入';
-    }
-}
-
-
 // 獲取上次查詢資料（託收託運回報_篩選）- 修正版
 async fetchLastQueryData() {
     const container = document.getElementById('deliveryPointsTableContainer');
@@ -11543,34 +11531,31 @@ async showRouteAddresses(routeName) {
 
 // 載入主控台資料 (修改版)
 async loadDashboard() {
-    // 檢查快取
+    // 🔥 新增：先檢查快取（只在線上模式且非模擬資料時使用）
     if (!CONFIG.USE_MOCK_DATA && this.isOnline) {
-        const cached = DashboardCache.get();  // 👈 改名為 cached
+        const cachedData = DashboardCache.get();
         
-        if (cached && cached.data) {  // 👈 檢查 cached.data
+        if (cachedData) {
             console.log('⚡ 使用快取資料，立即顯示');
             
-            const data = cached.data;  // 👈 取出 data 物件
-            
-            // 立即更新 UI
-            document.getElementById('todayDeliveries').textContent = data.routePalletSum || 0;
-            document.getElementById('vehicleUsage').textContent = `${data.routePalletNonZeroPercentage || 0}%`;
-            document.getElementById('onTimeRate').textContent = data.routeTableLastBValue || 0;
-            document.getElementById('alertCount').textContent = data.routeTableAlertValue || 0;
+            // 立即更新 UI（使用快取資料）
+            document.getElementById('todayDeliveries').textContent = cachedData.routePalletSum;
+            document.getElementById('vehicleUsage').textContent = `${cachedData.routePalletNonZeroPercentage}%`;
+            document.getElementById('onTimeRate').textContent = cachedData.routeTableLastBValue;
+            document.getElementById('alertCount').textContent = cachedData.routeTableAlertValue;
             
             // 更新異常警示樣式
             const alertElement = document.getElementById('alertCount');
-            if (data.routeTableAlertValue > 2) {
+            if (cachedData.routeTableAlertValue > 2) {
                 alertElement.classList.add('alert');
             } else {
                 alertElement.classList.remove('alert');
             }
             
-            // 👇 更新時間戳
-            updateDashboardTimestamp(cached.ts);
-            
+            // 顯示快取提示（可選）
             this.showNotification('數據已驅動', 'info', 2000);
-            return;
+            
+            return; // 直接返回，不再載入
         }
     }
     
@@ -11644,7 +11629,7 @@ async loadDashboard() {
                     routeTableLastBValue,
                     routeTableAlertValue
                 });
-                console.log('💾 資料已快取（5分鐘有效）');
+                console.log('💾 資料已快取（30分鐘有效）');
             }
         }
         
@@ -11669,6 +11654,11 @@ async loadDashboard() {
         this.hideLoading();
     }
 }
+
+
+
+
+
 
             // 載入路線管理資料
             async loadRouteManagement() {
