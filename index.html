@@ -4557,7 +4557,6 @@ justify-content:flex-end; /* 右靠齊 */
     </div>
 
     <script>
-       
         // ==================== 數據統計分析功能 ====================
 
 /**
@@ -6126,54 +6125,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.head.appendChild(script);
         });
     }
-         // ==================== 🔥 第一優先：快取管理器定義 ====================
-// 必須在所有類別和函數之前定義
-
-const DashboardCache = {
-    key: 'dashboardAggCache_v1',
-    
-    set(data) {
-        try {
-            localStorage.setItem(this.key, JSON.stringify({
-                ts: Date.now(),
-                data
-            }));
-            console.log('💾 快取已儲存');
-        } catch(e) {
-            console.error('快取儲存失敗:', e);
-        }
-    },
-    
-    get() {
-        try {
-            const raw = localStorage.getItem(this.key);
-            if (!raw) return null;
-            
-            const cached = JSON.parse(raw);
-            const now = Date.now();
-            const age = now - cached.ts;
-            
-            // 30分鐘過期
-            if (age > 1800000) {
-                console.log('⏰ 快取已過期，清除');
-                this.clear();
-                return null;
-            }
-            
-            console.log(`⚡ 使用快取（${Math.floor(age/1000)}秒前）`);
-            return cached;
-            
-        } catch(e) {
-            console.error('快取讀取失敗:', e);
-            return null;
-        }
-    },
-    
-    clear() {
-        localStorage.removeItem(this.key);
-        console.log('🗑️ 快取已清除');
-    }
-};
         // ===== JavaScript 代碼 =====
         
         // 全域變數
@@ -8448,7 +8399,24 @@ class TaskProgressManager {
 const TaskProgress = new TaskProgressManager();
 
 /* ============== Dashboard 快取 + Timestamp ============== */
-
+const DashboardCache = {
+  key: 'dashboardAggCache_v1',
+  set(data){
+    localStorage.setItem(this.key, JSON.stringify({
+      ts: Date.now(),
+      data
+    }));
+  },
+  get(){
+    try {
+      const raw = localStorage.getItem(this.key);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    } catch(e){
+      return null;
+    }
+  }
+};
 
 function formatTime(ts){
   const d = new Date(ts);
