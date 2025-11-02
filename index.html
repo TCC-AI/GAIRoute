@@ -11573,12 +11573,10 @@ async loadDashboard() {
         }
         
         // 更新統計數據（原本的邏輯）
-        // 讀取快取時
-        const data = cached.data;
-        document.getElementById('todayDeliveries').textContent = data.routePalletSum || 0;
-        document.getElementById('vehicleUsage').textContent = `${data.routePalletNonZeroPercentage || 0}%`;
-        document.getElementById('onTimeRate').textContent = data.routeTableLastBValue || 0;
-        document.getElementById('alertCount').textContent = data.routeTableAlertValue || 0;
+        document.getElementById('todayDeliveries').textContent = routePalletSum;
+        document.getElementById('vehicleUsage').textContent = `${routePalletNonZeroPercentage}%`;
+        document.getElementById('onTimeRate').textContent = routeTableLastBValue;
+        document.getElementById('alertCount').textContent = routeTableAlertValue;
 
         // 根據異常警示值更新樣式（原本的邏輯）
         const alertElement = document.getElementById('alertCount');
