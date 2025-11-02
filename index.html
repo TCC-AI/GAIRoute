@@ -6733,39 +6733,21 @@ refreshRouteTableC() {
             connectionStatus: document.getElementById('connectionStatus')
         };
 
-       /* ============== Dashboard 快取 + Timestamp ============== */
+        /* ============== Dashboard 快取 + Timestamp ============== */
 const DashboardCache = {
   key: 'dashboardAggCache_v1',
-  ttl: 1 * 60 * 1000,  // ⭐ 新增：30 分鐘 TTL
-  
   set(data){
     localStorage.setItem(this.key, JSON.stringify({
       ts: Date.now(),
       data
     }));
-    console.log('💾 資料已快取 (30分鐘有效)');
   },
-  
   get(){
     try {
       const raw = localStorage.getItem(this.key);
       if(!raw) return null;
-      
-      const parsed = JSON.parse(raw);
-      const age = Date.now() - parsed.ts;
-      
-      // ⭐ 新增：檢查是否過期
-      if (age > this.ttl) {
-        console.log(`⏰ 快取已過期 (${Math.floor(age/60000)} 分鐘前)`);
-        localStorage.removeItem(this.key); // 清除過期快取
-        return null;
-      }
-      
-      console.log(`✅ 快取有效 (${Math.floor(age/1000)} 秒前)`);
-      return parsed;
-      
+      return JSON.parse(raw);
     } catch(e){
-      console.error('❌ 讀取快取失敗:', e);
       return null;
     }
   }
@@ -6780,10 +6762,8 @@ function updateDashboardTimestamp(ts){
   const timeEl = document.getElementById('dashboardTimestamp');
   const badge = document.getElementById('dashboardFreshBadge');
   if(!timeEl || !badge) return;
-  
   timeEl.textContent = '資料時間 ' + formatTime(ts);
   const ageSec = (Date.now()-ts)/1000;
-  
   badge.classList.remove('stale','expired');
   if (ageSec < 60){
     badge.textContent='最新';
