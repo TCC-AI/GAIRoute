@@ -2432,6 +2432,222 @@
             font-weight: 500;
             font-size: 1.1rem;
         }
+/* ==================== GAI每日訂單分析對話框樣式 ==================== */
+
+/* 分析內容容器 */
+.analysis-content {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* 標題區 - 漸層大字 */
+.analysis-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+}
+
+/* 總計區 - 醒目卡片 */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
+    border: 2px solid rgba(14, 165, 233, 0.2);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.15);
+    border-color: rgba(14, 165, 233, 0.4);
+}
+
+.summary-card-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.summary-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+}
+
+.summary-card-unit {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-left: 3px;
+}
+
+/* 明細區 - 表格式 */
+.orders-table-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1.5rem;
+}
+
+.orders-table-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+}
+
+.orders-table thead th {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.orders-table thead th:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.orders-table thead th:last-child {
+    border-radius: 0 8px 8px 0;
+    text-align: right;
+}
+
+.orders-table tbody tr {
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.orders-table tbody tr:hover {
+    background: rgba(14, 165, 233, 0.04);
+    transform: scale(1.005);
+}
+
+/* 客戶名稱 - 粗體藍色 */
+.customer-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0ea5e9;
+    padding: 0.875rem 1rem;
+}
+
+/* 板數 - 大字綠色 */
+.pallet-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #10b981;
+    text-align: right;
+    padding: 0.875rem 1rem;
+}
+
+.pallet-unit {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-left: 2px;
+}
+
+/* 大量訂單標記 (>50板) - 橙色 */
+.high-volume {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.08) 0%, rgba(249, 115, 22, 0.08) 100%) !important;
+    border-left: 3px solid #f97316;
+}
+
+.high-volume .customer-name {
+    color: #f97316;
+}
+
+.high-volume .pallet-count {
+    color: #f97316;
+    font-size: 1.65rem;
+}
+
+.high-volume-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+/* 結尾訊息 */
+.analysis-footer {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.04) 0%, rgba(16, 185, 129, 0.04) 100%);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .analysis-title {
+        font-size: 1.35rem;
+    }
+    
+    .summary-card-value {
+        font-size: 1.5rem;
+    }
+    
+    .orders-table {
+        font-size: 0.8rem;
+    }
+    
+    .customer-name {
+        font-size: 0.85rem;
+    }
+    
+    .pallet-count {
+        font-size: 1.25rem;
+    }
+}
+
+      
 
         /* 模態視窗 */
         .modal {
@@ -7939,7 +8155,7 @@ hideGAIAssistantModal() {
 
 
 /**
- * 顯示最新訂單通知
+ * 顯示最新訂單通知（整合優化版）
  */
 async showLatestOrderNotification() {
     try {
@@ -7953,13 +8169,18 @@ async showLatestOrderNotification() {
         // 格式化時間顯示
         const formattedTime = this.formatOrderTime(latestOrder.time);
         
-        // 顯示大視窗
-        this.showOrderAnalysisModal(formattedTime, latestOrder.content);
+        // 🔥 使用新的優化版對話框
+        showGAIAnalysisModal({
+            updateTime: formattedTime,
+            content: latestOrder.content
+        });
         
     } catch (error) {
         console.error('顯示最新訂單通知失敗:', error);
     }
 }
+
+
 
 /**
  * 格式化訂單時間顯示
@@ -8248,6 +8469,186 @@ hideOrderAnalysisModal() {
         modal.style.display = 'none';
     }, 300);
 }
+
+            /**
+ * 顯示 GAI 每日訂單分析彈窗（優化版）
+ */
+function showGAIAnalysisModal(data) {
+    const modal = document.getElementById('gaiAnalysisModal');
+    if (!modal) {
+        console.error('找不到 gaiAnalysisModal 元素');
+        return;
+    }
+
+    const timeElem = modal.querySelector('.analysis-update-time');
+    const contentElem = modal.querySelector('.analysis-text-content');
+
+    // 更新時間
+    if (timeElem && data.updateTime) {
+        timeElem.textContent = data.updateTime;
+    }
+
+    // 解析訂單資料
+    const orders = parseOrderData(data.content);
+    
+    // 計算統計數據
+    const stats = calculateOrderStats(orders);
+
+    // 生成優化的 HTML
+    const htmlContent = generateEnhancedAnalysisHTML(orders, stats, data.content);
+    
+    if (contentElem) {
+        contentElem.innerHTML = htmlContent;
+    }
+
+    modal.style.display = 'flex';
+}
+
+/**
+ * 解析訂單資料
+ */
+function parseOrderData(content) {
+    const orders = [];
+    const lines = content.split('\n');
+    
+    for (let line of lines) {
+        // 匹配格式：客戶名稱 貨物XX板
+        const match = line.match(/^(.+?)\s+貨物(\d+)板/);
+        if (match) {
+            orders.push({
+                customer: match[1].trim(),
+                pallets: parseInt(match[2])
+            });
+        }
+    }
+    
+    return orders;
+}
+
+/**
+ * 計算統計數據
+ */
+function calculateOrderStats(orders) {
+    const totalPallets = orders.reduce((sum, order) => sum + order.pallets, 0);
+    const totalCustomers = orders.length;
+    const avgPallets = totalCustomers > 0 ? (totalPallets / totalCustomers).toFixed(1) : 0;
+    const maxOrder = orders.length > 0 ? Math.max(...orders.map(o => o.pallets)) : 0;
+    
+    return {
+        totalPallets,
+        totalCustomers,
+        avgPallets,
+        maxOrder
+    };
+}
+
+/**
+ * 生成優化的 HTML 內容
+ */
+function generateEnhancedAnalysisHTML(orders, stats, originalContent) {
+    // 排序：板數由大到小
+    const sortedOrders = [...orders].sort((a, b) => b.pallets - a.pallets);
+    
+    let html = `
+        <div class="analysis-content">
+            <!-- 標題區 -->
+            <div class="analysis-title">
+                📊 今日訂單統計分析
+            </div>
+            
+            <!-- 總計區 -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="summary-card-label">總板數</div>
+                    <div class="summary-card-value">
+                        ${stats.totalPallets}
+                        <span class="summary-card-unit">板</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="summary-card-label">客戶數</div>
+                    <div class="summary-card-value">
+                        ${stats.totalCustomers}
+                        <span class="summary-card-unit">家</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="summary-card-label">平均板數</div>
+                    <div class="summary-card-value">
+                        ${stats.avgPallets}
+                        <span class="summary-card-unit">板</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="summary-card-label">最大訂單</div>
+                    <div class="summary-card-value">
+                        ${stats.maxOrder}
+                        <span class="summary-card-unit">板</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 明細區 -->
+            <div class="orders-table-container">
+                <div class="orders-table-header">
+                    📋 訂單明細列表
+                </div>
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>客戶名稱</th>
+                            <th>貨物板數</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+    
+    // 生成訂單列表
+    sortedOrders.forEach(order => {
+        const isHighVolume = order.pallets > 50;
+        const rowClass = isHighVolume ? 'high-volume' : '';
+        const badge = isHighVolume ? '<span class="high-volume-badge">大量</span>' : '';
+        
+        html += `
+            <tr class="${rowClass}">
+                <td class="customer-name">
+                    ${order.customer}${badge}
+                </td>
+                <td class="pallet-count">
+                    ${order.pallets}<span class="pallet-unit">板</span>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 結尾訊息 -->
+            <div class="analysis-footer">
+                💬 感謝您的支持與配合！如有任何疑問，歡迎隨時聯絡我們。
+            </div>
+        </div>
+    `;
+    
+    return html;
+}
+
+/**
+ * 關閉 GAI 分析對話框
+ */
+function closeGAIAnalysisModal() {
+    const modal = document.getElementById('gaiAnalysisModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
 
             // 綁定事件
             bindEvents() {
@@ -13824,6 +14225,33 @@ function collapseAllRoutes() {
     </div>
   </div>
 </div>
+
+    <!-- GAI每日訂單分析對話框 -->
+<div id="gaiAnalysisModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #10b981 100%);">
+            <h2 style="color: white; margin: 0;">
+                📊 GAI每日訂單分析 - 最新資訊
+            </h2>
+            <span class="close" onclick="closeGAIAnalysisModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom: 1rem; color: #0ea5e9; font-weight: 600;">
+                🕐 更新時間
+                <span class="analysis-update-time" style="color: #06b6d4; margin-left: 10px;">
+                    載入中...
+                </span>
+            </div>
+            
+            <!-- 主要內容區 -->
+            <div class="analysis-text-content">
+                載入中...
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <!-- 最新訂單通知對話框 -->
 <div id="latestOrderDialog" class="latest-order-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="latestOrderTitle">
   <div class="lod-inner">
