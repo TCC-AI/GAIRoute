@@ -7100,13 +7100,100 @@ addChatMessage(type, message, mode = null) {
     // 滾動到最新訊息
     chatHistory.scrollTop = chatHistory.scrollHeight;
 }
-// 🔥 格式化聊天訊息 - 支持 Markdown 基本語法
 formatChatMessage(message) {
     if (!message) return '';
     
     let formatted = message;
     
-    // 1. 代碼塊 (```)
+    // ========================================
+    // 第一部分：智能識別昶青物流訂單格式
+    // ========================================
+    
+    // 1. 識別標題行（包含「主任」關鍵字）
+    formatted = formatted.replace(/(.*主任.*：)/g, 
+        '<div style="font-size: 1.15rem; font-weight: 700; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #dbeafe;">$1</div>');
+    
+    // 2. 識別說明文字行（包含「統計」、「截至」等關鍵字）
+    formatted = formatted.replace(/(今日截至目前為止.*：)/g, 
+        '<div style="font-weight: 600; color: #475569; margin: 1.5rem 0 1rem 0; font-size: 1.05rem;">$1</div>');
+    
+    // 3. 識別客戶訂單行（格式：客戶名 貨物XX板）
+    formatted = formatted.replace(/^([^\s\n]+)\s+貨物(\d+)板\s*$/gim, (match, customer, quantity) => {
+        const qty = parseInt(quantity);
+        
+        // 根據數量設定顏色和圖標
+        let color, bgColor, icon, badge;
+        
+        if (qty >= 100) {
+            color = '#dc2626';      // 紅色（大量）
+            bgColor = '#fee2e2';
+            icon = '🔥';
+            badge = 'VIP';
+        } else if (qty >= 50) {
+            color = '#f59e0b';      // 橘色（中量）
+            bgColor = '#fef3c7';
+            icon = '⭐';
+            badge = '';
+        } else {
+            color = '#10b981';      // 綠色（一般）
+            bgColor = '#d1fae5';
+            icon = '📦';
+            badge = '';
+        }
+        
+        return `<div style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.875rem 1.25rem;
+            margin: 0.5rem 0;
+            background: linear-gradient(90deg, ${bgColor} 0%, #ffffff 100%);
+            border-left: 4px solid ${color};
+            border-radius: 0 10px 10px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        " onmouseover="this.style.transform='translateX(8px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" 
+           onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.5rem;">${icon}</span>
+                <span style="
+                    font-weight: 600;
+                    color: #1e293b;
+                    font-size: 1.05rem;
+                ">${customer}</span>
+                ${badge ? `<span style="
+                    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+                    color: white;
+                    padding: 0.125rem 0.5rem;
+                    border-radius: 12px;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                ">${badge}</span>` : ''}
+            </div>
+            <span style="
+                background: ${color};
+                color: white;
+                padding: 0.375rem 1rem;
+                border-radius: 20px;
+                font-weight: 700;
+                font-size: 0.95rem;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                min-width: 70px;
+                text-align: center;
+            ">${quantity} 板</span>
+        </div>`;
+    });
+    
+    // 4. 識別結尾問候（感謝、祝福等）
+    formatted = formatted.replace(/(感謝各位客戶.*?[！!])/gs, 
+        '<div style="margin-top: 2rem; padding: 1.25rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 12px; color: #1e40af; font-weight: 500; text-align: center; border: 2px solid #93c5fd; box-shadow: 0 2px 8px rgba(59,130,246,0.1);">✨ $1</div>');
+    
+    // ========================================
+    // 第二部分：標準 Markdown 語法支援
+    // ========================================
+    
+    // 代碼塊 (```)
     formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
         return `<pre style="
             background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
@@ -7124,7 +7211,7 @@ formatChatMessage(message) {
         ">${this.escapeHtml(code.trim())}</code></pre>`;
     });
     
-    // 2. 標題 H1-H6
+    // 標題 H3
     formatted = formatted.replace(/^### (.*$)/gim, (match, title) => {
         return `<h3 style="
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -7139,6 +7226,7 @@ formatChatMessage(message) {
         ">${title}</h3>`;
     });
     
+    // 標題 H2
     formatted = formatted.replace(/^## (.*$)/gim, (match, title) => {
         return `<h2 style="
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -7153,6 +7241,7 @@ formatChatMessage(message) {
         ">${title}</h2>`;
     });
     
+    // 標題 H1
     formatted = formatted.replace(/^# (.*$)/gim, (match, title) => {
         return `<h1 style="
             background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
@@ -7167,7 +7256,7 @@ formatChatMessage(message) {
         ">${title}</h1>`;
     });
     
-    // 3. 分隔線
+    // 分隔線
     formatted = formatted.replace(/^---$/gim, `<hr style="
         border: none;
         height: 2px;
@@ -7175,7 +7264,7 @@ formatChatMessage(message) {
         margin: 2rem 0;
     ">`);
     
-    // 4. 引用
+    // 引用
     formatted = formatted.replace(/^> (.+)$/gim, (match, quote) => {
         return `<blockquote style="
             border-left: 4px solid #3b82f6;
@@ -7188,7 +7277,7 @@ formatChatMessage(message) {
         ">${quote}</blockquote>`;
     });
     
-    // 5. 無序列表
+    // 無序列表
     formatted = formatted.replace(/^\- (.+)$/gim, (match, item) => {
         return `<div style="
             display: flex;
@@ -7207,7 +7296,7 @@ formatChatMessage(message) {
         </div>`;
     });
     
-    // 6. 有序列表
+    // 有序列表
     let orderCounter = 0;
     formatted = formatted.replace(/^\d+\. (.+)$/gim, (match, item) => {
         orderCounter++;
@@ -7234,20 +7323,7 @@ formatChatMessage(message) {
         </div>`;
     });
     
-    // 7. 表格（簡化版）
-    formatted = formatted.replace(/\|(.+)\|/g, (match, content) => {
-        const cells = content.split('|').map(cell => cell.trim());
-        return `<div style="
-            display: flex;
-            border: 1px solid #e2e8f0;
-            background: #f8fafc;
-            padding: 0.5rem;
-            margin: 0.25rem 0;
-            border-radius: 4px;
-        ">${cells.map(cell => `<span style="flex: 1; padding: 0 0.5rem;">${cell}</span>`).join('')}</div>`;
-    });
-    
-    // 8. 圖片
+    // 圖片
     formatted = formatted.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
         return `<img src="${url}" alt="${alt}" style="
             max-width: 100%;
@@ -7257,7 +7333,7 @@ formatChatMessage(message) {
         ">`;
     });
     
-    // 9. 連結
+    // 連結
     formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
         return `<a href="${url}" target="_blank" style="
             color: #3b82f6;
@@ -7269,7 +7345,7 @@ formatChatMessage(message) {
            onmouseout="this.style.color='#3b82f6'; this.style.borderBottomColor='#93c5fd';">${text}</a>`;
     });
     
-    // 10. 行內代碼
+    // 行內代碼
     formatted = formatted.replace(/`([^`]+)`/g, (match, code) => {
         return `<code style="
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
@@ -7283,24 +7359,35 @@ formatChatMessage(message) {
         ">${this.escapeHtml(code)}</code>`;
     });
     
-    // 11. 粗體
+    // 粗體
     formatted = formatted.replace(/\*\*(.+?)\*\*/g, (match, text) => {
         return `<strong style="
             color: #1e293b;
             font-weight: 700;
-            background: linear-gradient(135deg, #fef3c7 0%, transparent 100%);
-            padding: 0 0.25rem;
         ">${text}</strong>`;
     });
     
-    // 12. 斜體
+    // 斜體
     formatted = formatted.replace(/\*(.+?)\*/g, '<em style="color: #64748b; font-style: italic;">$1</em>');
     
-    // 13. 換行
+    // 換行
     formatted = formatted.replace(/\n/g, '<br>');
     
     return formatted;
 }
+
+// 輔助函數：HTML 轉義（加在 formatChatMessage 後面）
+escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 
 // 輔助函數：HTML 轉義
 escapeHtml(text) {
