@@ -10093,15 +10093,14 @@ hideGAISecretaryModal() {
     modal.style.display = 'none';
 }
 
-// 👇👇👇 在這裡插入新代碼 👇👇👇
 
 /**
- * 🔥 Markdown 轉 HTML 渲染器（增強版）
+ * 🔥 Markdown 渲染器（修正版）
  */
 renderMarkdown(text) {
     if (!text) return '';
     
-    let html = text;
+    let html = String(text);
     
     // 1. 處理程式碼區塊 (```)
     html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
@@ -10111,7 +10110,7 @@ renderMarkdown(text) {
     // 2. 處理行內程式碼 (`)
     html = html.replace(/`([^`]+)`/g, '<code style="background: #f1f5f9; color: #dc2626; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; font-size: 0.9em;">$1</code>');
     
-    // 3. 處理標題
+    // 3. 處理標題（在處理粗體之前）
     html = html.replace(/^### (.+)$/gm, '<h3 style="color: #0ea5e9; margin: 1.5rem 0 0.75rem 0; font-size: 1.25rem; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">$1</h3>');
     html = html.replace(/^## (.+)$/gm, '<h2 style="color: #0ea5e9; margin: 1.75rem 0 1rem 0; font-size: 1.5rem; font-weight: 700;">$1</h2>');
     html = html.replace(/^# (.+)$/gm, '<h1 style="color: #0ea5e9; margin: 2rem 0 1rem 0; font-size: 1.75rem; font-weight: 700;">$1</h1>');
@@ -10124,14 +10123,24 @@ renderMarkdown(text) {
     // 5. 處理引用區塊
     html = html.replace(/^> (.+)$/gm, '<blockquote style="border-left: 4px solid #0ea5e9; padding-left: 1rem; margin: 1rem 0; color: #475569; background: #f0f9ff; padding: 0.75rem 1rem; border-radius: 0 8px 8px 0;">$1</blockquote>');
     
-    // 6. 處理項目符號列表
-    html = html.replace(/^- (.+)$/gm, '<li style="margin: 0.5rem 0; padding-left: 0.5rem;">$1</li>');
-    html = html.replace(/(<li[^>]*>.*<\/li>)/s, '<ul style="list-style: none; padding-left: 0; margin: 1rem 0;">$1</ul>');
-    html = html.replace(/<li/g, '<li style="position: relative; padding-left: 1.5rem;"><span style="position: absolute; left: 0; color: #0ea5e9; font-weight: bold;">•</span>');
+    // 6. 處理項目符號列表（改進版）
+    html = html.replace(/^- (.+)$/gm, (match, content) => {
+        return `<li style="position: relative; padding-left: 1.5rem; margin: 0.5rem 0;"><span style="position: absolute; left: 0; color: #0ea5e9; font-weight: bold;">•</span>${content}</li>`;
+    });
+    
+    // 包裹連續的 <li> 為 <ul>
+    html = html.replace(/(<li[^>]*>.*?<\/li>\s*)+/gs, (match) => {
+        return `<ul style="list-style: none; padding-left: 0; margin: 1rem 0;">${match}</ul>`;
+    });
     
     // 7. 處理編號列表
-    html = html.replace(/^(\d+)\. (.+)$/gm, '<li style="margin: 0.5rem 0; padding-left: 0.5rem;" value="$1">$2</li>');
-    html = html.replace(/(<li[^>]*value="\d+"[^>]*>.*<\/li>)/s, '<ol style="padding-left: 1.5rem; margin: 1rem 0; counter-reset: item;">$1</ol>');
+    html = html.replace(/^(\d+)\. (.+)$/gm, '<li style="margin: 0.5rem 0; padding-left: 0.5rem;">$2</li>');
+    html = html.replace(/(<li[^>]*>.*?<\/li>\s*)+/gs, (match) => {
+        if (!match.includes('position: relative')) { // 避免重複包裹項目符號列表
+            return `<ol style="padding-left: 1.5rem; margin: 1rem 0;">${match}</ol>`;
+        }
+        return match;
+    });
     
     // 8. 處理分隔線
     html = html.replace(/^---$/gm, '<hr style="border: none; border-top: 2px solid #e2e8f0; margin: 1.5rem 0;">');
@@ -10139,24 +10148,40 @@ renderMarkdown(text) {
     // 9. 處理連結
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color: #0ea5e9; text-decoration: underline; font-weight: 500;" target="_blank" rel="noopener">$1</a>');
     
-    // 10. 處理表格（簡易版）
-    html = html.replace(/\|(.+)\|/g, (match) => {
-        const cells = match.split('|').filter(c => c.trim());
-        return '<tr>' + cells.map(c => `<td style="padding: 0.5rem; border: 1px solid #e2e8f0;">${c.trim()}</td>`).join('') + '</tr>';
-    });
-    html = html.replace(/(<tr>.*<\/tr>)/s, '<table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">$1</table>');
-    
-    // 11. 處理換行
-    html = html.replace(/\n\n/g, '</p><p style="margin: 0.75rem 0; line-height: 1.6;">');
+    // 10. 處理換行（改進版）
+    // 先處理雙換行（段落分隔）
+    html = html.replace(/\n\n+/g, '</p><p style="margin: 0.75rem 0; line-height: 1.6; color: #374151;">');
+    // 再處理單換行（行內換行）
     html = html.replace(/\n/g, '<br>');
     
-    // 12. 包裹段落
-    if (!html.startsWith('<')) {
-        html = '<p style="margin: 0.75rem 0; line-height: 1.6;">' + html + '</p>';
+    // 11. 包裹段落（修正版）
+    // 只在沒有 HTML 標籤開頭時才包裹
+    if (!html.match(/^<(h[1-6]|ul|ol|pre|blockquote|hr)/)) {
+        html = '<p style="margin: 0.75rem 0; line-height: 1.6; color: #374151;">' + html;
+    }
+    
+    // 確保結尾有閉合標籤
+    if (!html.match(/<\/(p|h[1-6]|ul|ol|pre|blockquote)>$/)) {
+        html = html + '</p>';
     }
     
     return html;
 }
+
+/**
+ * HTML 轉義工具
+ */
+escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 
 /**
  * HTML 轉義工具
