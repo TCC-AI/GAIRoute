@@ -8015,9 +8015,16 @@ showOrderAnalysisModal(time, content) {
     // 設置內容
     if (timeElement) timeElement.textContent = time;
 if (contentElement) {
-    // 🔥 使用 Markdown 渲染器
-    contentElement.innerHTML = renderMarkdown(content);
+    try {
+        // 使用 this.renderMarkdown
+        contentElement.innerHTML = this.renderMarkdown(content);
+    } catch (error) {
+        console.error('Markdown 渲染錯誤:', error);
+        // 降級處理：直接顯示純文字
+        contentElement.textContent = content;
+    }
 }
+
 
     
     // 顯示模態視窗
