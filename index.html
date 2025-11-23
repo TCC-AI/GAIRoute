@@ -7229,72 +7229,125 @@ addChatMessage(type, message, mode = null) {
 }
 
 
-// 🔥 格式化聊天訊息 - 針對昶青物流文字格式優化
+// 🔥 格式化聊天訊息 - 針對昶青物流文字格式優化 (修正版)
 formatChatMessage(message) {
     if (!message) return '';
     
-    let formatted = message;
+    // 先將訊息按行分割處理
+    const lines = message.split('\n');
+    const formattedLines = [];
     
-    // 1. 標題行（包含"您好~我是"開頭）
-    formatted = formatted.replace(/^(您好~我是.+主任:)$/gm, 
-        '<div style="background: linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%); color: white; padding: 1rem 1.5rem; border-radius: 12px 12px 0 0; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);"><i class="fas fa-user-circle" style="margin-right: 0.5rem;"></i>$1</div>');
-    
-    // 2. 重要提示行（今日截至...）
-    formatted = formatted.replace(/^(今日截至目前.+:)$/gm, 
-        '<div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 0.75rem 1rem; margin: 1rem 0; color: #1e40af; font-weight: 600; border-radius: 0 8px 8px 0;"><i class="fas fa-calendar-check" style="margin-right: 0.5rem; color: #3b82f6;"></i>$1</div>');
-    
-    // 3. 暫無訂單數據（特殊處理）
-    formatted = formatted.replace(/^(暫無訂單數據)$/gm, 
-        '<div style="background: #fef3c7; border: 2px dashed #f59e0b; padding: 1.5rem; margin: 1rem 0; text-align: center; color: #92400e; font-weight: 600; border-radius: 12px;"><i class="fas fa-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: #f59e0b;"></i>$1</div>');
-    
-    // 4. 客戶名稱與貨物數量（核心數據）
-    // 匹配格式：「客戶名 貨物XX板」
-    formatted = formatted.replace(/^([^\s]+)\s+(貨物\d+板)$/gm, (match, customer, cargo) => {
-        // 提取數字
-        const number = cargo.match(/\d+/)[0];
-        const numValue = parseInt(number);
+    for (let line of lines) {
+        line = line.trim();
+        if (!line) continue; // 跳過空行
         
-        // 根據數量設定顏色
-        let color, bgColor, icon;
-        if (numValue >= 100) {
-            color = '#dc2626'; // 紅色 - 大量
-            bgColor = '#fef2f2';
-            icon = 'fa-fire';
-        } else if (numValue >= 50) {
-            color = '#f59e0b'; // 橙色 - 中量
-            bgColor = '#fff7ed';
-            icon = 'fa-box-open';
-        } else if (numValue >= 20) {
-            color = '#3b82f6'; // 藍色 - 正常
-            bgColor = '#eff6ff';
-            icon = 'fa-boxes';
-        } else {
-            color = '#10b981'; // 綠色 - 少量
-            bgColor = '#ecfdf5';
-            icon = 'fa-box';
+        // 1. 標題行（包含"您好~我是"開頭）
+        if (line.includes('您好~我是') && line.includes('主任')) {
+            formattedLines.push(
+                `<div style="background: linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%); color: white; padding: 1rem 1.5rem; border-radius: 12px 12px 0 0; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);"><i class="fas fa-user-circle" style="margin-right: 0.5rem;"></i>${line}</div>`
+            );
+            continue;
         }
         
-        return `<div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; margin: 0.5rem 0; background: ${bgColor}; border-left: 4px solid ${color}; border-radius: 0 8px 8px 0; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none';">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
-                <span style="font-weight: 600; color: #1e293b; font-size: 1rem;">${customer}</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="background: ${color}; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">${number}</span>
-                <span style="color: ${color}; font-weight: 600;">板</span>
-            </div>
-        </div>`;
+        // 2. 重要提示行（今日截至...）
+        if (line.includes('今日截至目前') || line.includes('來自客戶的訂單統計')) {
+            formattedLines.push(
+                `<div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 0.75rem 1rem; margin: 1rem 0; color: #1e40af; font-weight: 600; border-radius: 0 8px 8px 0;"><i class="fas fa-calendar-check" style="margin-right: 0.5rem; color: #3b82f6;"></i>${line}</div>`
+            );
+            continue;
+        }
+        
+        // 3. 暫無訂單數據
+        if (line.includes('暫無訂單數據') || line.includes('暫無訂單')) {
+            formattedLines.push(
+                `<div style="background: #fef3c7; border: 2px dashed #f59e0b; padding: 1.5rem; margin: 1rem 0; text-align: center; color: #92400e; font-weight: 600; border-radius: 12px;"><i class="fas fa-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: #f59e0b;"></i>${line}</div>`
+            );
+            continue;
+        }
+        
+        // 4. 客戶名稱與貨物數量（核心數據）
+        // 匹配格式：「客戶名 貨物XX板」
+        const cargoMatch = line.match(/^(.+?)\s+貨物(\d+)板$/);
+        if (cargoMatch) {
+            const customer = cargoMatch[1].trim();
+            const number = parseInt(cargoMatch[2]);
+            
+            // 根據數量設定顏色
+            let color, bgColor, icon;
+            if (number >= 100) {
+                color = '#dc2626'; // 紅色 - 大量
+                bgColor = '#fef2f2';
+                icon = 'fa-fire';
+            } else if (number >= 50) {
+                color = '#f59e0b'; // 橙色 - 中量
+                bgColor = '#fff7ed';
+                icon = 'fa-box-open';
+            } else if (number >= 20) {
+                color = '#3b82f6'; // 藍色 - 正常
+                bgColor = '#eff6ff';
+                icon = 'fa-boxes';
+            } else {
+                color = '#10b981'; // 綠色 - 少量
+                bgColor = '#ecfdf5';
+                icon = 'fa-box';
+            }
+            
+            formattedLines.push(
+                `<div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; margin: 0.5rem 0; background: ${bgColor}; border-left: 4px solid ${color}; border-radius: 0 8px 8px 0; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none';">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
+                        <span style="font-weight: 600; color: #1e293b; font-size: 1rem;">${customer}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="background: ${color}; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">${number}</span>
+                        <span style="color: ${color}; font-weight: 600;">板</span>
+                    </div>
+                </div>`
+            );
+            continue;
+        }
+        
+        // 5. 感謝語（結尾）
+        if (line.includes('感謝') || line.includes('祝您') || line.includes('歡迎隨時')) {
+            formattedLines.push(
+                `<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1rem 1.5rem; border-radius: 0 0 12px 12px; margin-top: 1rem; text-align: center; font-weight: 500; box-shadow: 0 -2px 8px rgba(16, 185, 129, 0.3);"><i class="fas fa-heart" style="margin-right: 0.5rem; color: #fef2f2;"></i>${line}</div>`
+            );
+            continue;
+        }
+        
+        // 6. 其他文字（保持原樣）
+        formattedLines.push(`<div style="padding: 0.5rem 1rem; color: #64748b;">${line}</div>`);
+    }
+    
+    return formattedLines.join('');
+}
+
+// 🔥 計算訂單統計
+calculateOrderStats(content) {
+    const stats = {
+        totalOrders: 0,
+        totalCargo: 0,
+        avgCargo: 0
+    };
+    
+    // 按行分割並匹配「客戶名 貨物XX板」格式
+    const lines = content.split('\n');
+    
+    lines.forEach(line => {
+        const match = line.match(/^(.+?)\s+貨物(\d+)板$/);
+        if (match) {
+            stats.totalOrders++;
+            stats.totalCargo += parseInt(match[2]);
+        }
     });
     
-    // 5. 感謝語（結尾）
-    formatted = formatted.replace(/^(感謝.+)$/gm, 
-        '<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1rem 1.5rem; border-radius: 0 0 12px 12px; margin-top: 1rem; text-align: center; font-weight: 500; box-shadow: 0 -2px 8px rgba(16, 185, 129, 0.3);"><i class="fas fa-heart" style="margin-right: 0.5rem; color: #fef2f2;"></i>$1</div>');
+    if (stats.totalOrders > 0) {
+        stats.avgCargo = Math.round(stats.totalCargo / stats.totalOrders);
+    }
     
-    // 6. 處理換行
-    formatted = formatted.replace(/\n/g, '<br>');
-    
-    return formatted;
+    return stats;
 }
+
 
 
 // 🔥 輔助函數：HTML 跳脫
@@ -8244,13 +8297,13 @@ showOrderAnalysisModal(time, content) {
     // 🔥 計算統計數據
     const stats = this.calculateOrderStats(content);
     
-    // 🔥 格式化內容並添加統計摘要
+    // 🔥 格式化內容
     if (contentElement) {
-        let formattedContent = this.formatChatMessage(content);
+        let formattedContent = '';
         
         // 如果有訂單數據，在頂部添加統計卡片
         if (stats.totalOrders > 0) {
-            const statsCard = `
+            formattedContent += `
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 1.5rem; background: white; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                     <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 8px; color: white;">
                         <i class="fas fa-shopping-cart" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
@@ -8269,8 +8322,10 @@ showOrderAnalysisModal(time, content) {
                     </div>
                 </div>
             `;
-            formattedContent = statsCard + formattedContent;
         }
+        
+        // 添加格式化的訂單內容
+        formattedContent += this.formatChatMessage(content);
         
         contentElement.innerHTML = formattedContent;
     }
@@ -8287,6 +8342,7 @@ showOrderAnalysisModal(time, content) {
         }
     }, 50);
 }
+
 
 // 🔥 新增：計算訂單統計
 calculateOrderStats(content) {
