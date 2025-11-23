@@ -8,6 +8,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* Markdown 內容樣式優化 */
+#orderAnalysisContent {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #374151;
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    min-height: 120px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Markdown 內容內部元素間距 */
+#orderAnalysisContent > *:first-child {
+    margin-top: 0 !important;
+}
+
+#orderAnalysisContent > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* 程式碼區塊滾動條美化 */
+#orderAnalysisContent pre {
+    scrollbar-width: thin;
+    scrollbar-color: #64748b #1e293b;
+}
+
+#orderAnalysisContent pre::-webkit-scrollbar {
+    height: 8px;
+}
+
+#orderAnalysisContent pre::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+#orderAnalysisContent pre::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 4px;
+}
+
+#orderAnalysisContent pre::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* 表格響應式 */
+#orderAnalysisContent table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    #orderAnalysisContent {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+}
+
         /* ==================== 統計資訊樣式 ==================== */
 
 /* 統計容器動畫 */
@@ -7100,26 +7160,127 @@ addChatMessage(type, message, mode = null) {
     // 滾動到最新訊息
     chatHistory.scrollTop = chatHistory.scrollHeight;
 }
-// 🔥 格式化聊天訊息 - 支持 Markdown 基本語法
+
+// 🔥 格式化聊天訊息 - 支持完整 Markdown 語法
 formatChatMessage(message) {
     if (!message) return '';
     
-    // 基本 Markdown 支持
-    let formatted = message
-        // 粗體
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        // 斜體
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        // 代碼
-        .replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.1); padding: 0.125rem 0.25rem; border-radius: 4px; font-family: monospace;">$1</code>')
-        // 項目符號
-        .replace(/^• (.+)$/gm, '<div style="margin: 0.25rem 0; padding-left: 1rem;">• $1</div>')
-        .replace(/^✅ (.+)$/gm, '<div style="margin: 0.25rem 0; padding-left: 1rem; color: #059669;">✅ $1</div>')
-        .replace(/^❌ (.+)$/gm, '<div style="margin: 0.25rem 0; padding-left: 1rem; color: #dc2626;">❌ $1</div>')
-        .replace(/^🔥 (.+)$/gm, '<div style="margin: 0.25rem 0; padding-left: 1rem; color: #f59e0b;">🔥 $1</div>');
+    let formatted = message;
+    
+    // 1. 程式碼區塊（三個反引號）- 必須最先處理
+    formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        return `<pre style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 0.5rem 0;"><code>${this.escapeHtml(code.trim())}</code></pre>`;
+    });
+    
+    // 2. 行內程式碼
+    formatted = formatted.replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.1); padding: 0.125rem 0.375rem; border-radius: 4px; font-family: \'Courier New\', monospace; font-size: 0.9em; color: #dc2626;">$1</code>');
+    
+    // 3. 標題（必須在粗體之前處理）
+    formatted = formatted.replace(/^### (.+)$/gm, '<h3 style="color: #0ea5e9; font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.5rem 0; border-bottom: 2px solid #e0f2fe; padding-bottom: 0.5rem;">$1</h3>');
+    formatted = formatted.replace(/^## (.+)$/gm, '<h2 style="color: #0284c7; font-size: 1.25rem; font-weight: 700; margin: 1.25rem 0 0.75rem 0; border-bottom: 2px solid #bae6fd; padding-bottom: 0.5rem;">$1</h2>');
+    formatted = formatted.replace(/^# (.+)$/gm, '<h1 style="color: #0369a1; font-size: 1.5rem; font-weight: 700; margin: 1.5rem 0 1rem 0; border-bottom: 3px solid #7dd3fc; padding-bottom: 0.75rem;">$1</h1>');
+    
+    // 4. 粗體（支援 ** 和 __）
+    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong style="color: #1e293b; font-weight: 700;">$1</strong>');
+    formatted = formatted.replace(/__(.+?)__/g, '<strong style="color: #1e293b; font-weight: 700;">$1</strong>');
+    
+    // 5. 斜體（支援 * 和 _）
+    formatted = formatted.replace(/\*(.+?)\*/g, '<em style="color: #475569; font-style: italic;">$1</em>');
+    formatted = formatted.replace(/_(.+?)_/g, '<em style="color: #475569; font-style: italic;">$1</em>');
+    
+    // 6. 刪除線
+    formatted = formatted.replace(/~~(.+?)~~/g, '<del style="color: #94a3b8; text-decoration: line-through;">$1</del>');
+    
+    // 7. 連結
+    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: #0ea5e9; text-decoration: underline; transition: color 0.2s;" onmouseover="this.style.color=\'#0284c7\'" onmouseout="this.style.color=\'#0ea5e9\'">$1 <i class="fas fa-external-link-alt" style="font-size: 0.75em;"></i></a>');
+    
+    // 8. 無序列表
+    formatted = formatted.replace(/^[•\-\*] (.+)$/gm, '<div style="margin: 0.25rem 0; padding-left: 1.5rem; position: relative;"><span style="position: absolute; left: 0; color: #0ea5e9; font-weight: bold;">•</span> $1</div>');
+    
+    // 9. 有序列表
+    let orderCounter = 0;
+    formatted = formatted.replace(/^\d+\. (.+)$/gm, () => {
+        orderCounter++;
+        return `<div style="margin: 0.25rem 0; padding-left: 1.5rem; position: relative;"><span style="position: absolute; left: 0; color: #0ea5e9; font-weight: bold;">${orderCounter}.</span> $1</div>`;
+    });
+    
+    // 10. 核取方塊
+    formatted = formatted.replace(/^\- \[x\] (.+)$/gm, '<div style="margin: 0.25rem 0; padding-left: 1.5rem;"><i class="fas fa-check-square" style="color: #10b981; margin-right: 0.5rem;"></i>$1</div>');
+    formatted = formatted.replace(/^\- \[ \] (.+)$/gm, '<div style="margin: 0.25rem 0; padding-left: 1.5rem;"><i class="far fa-square" style="color: #94a3b8; margin-right: 0.5rem;"></i>$1</div>');
+    
+    // 11. 引用區塊
+    formatted = formatted.replace(/^> (.+)$/gm, '<blockquote style="border-left: 4px solid #0ea5e9; padding-left: 1rem; margin: 0.5rem 0; color: #475569; background: #f0f9ff; padding: 0.75rem 1rem; border-radius: 0 8px 8px 0;">$1</blockquote>');
+    
+    // 12. 水平線
+    formatted = formatted.replace(/^---$/gm, '<hr style="border: none; border-top: 2px solid #e2e8f0; margin: 1rem 0;">');
+    formatted = formatted.replace(/^\*\*\*$/gm, '<hr style="border: none; border-top: 2px solid #e2e8f0; margin: 1rem 0;">');
+    
+    // 13. 表格（簡易支援）
+    formatted = this.formatMarkdownTable(formatted);
+    
+    // 14. 特殊標記（自訂）
+    formatted = formatted.replace(/^✅ (.+)$/gm, '<div style="margin: 0.25rem 0; padding: 0.5rem 1rem; background: #ecfdf5; border-left: 4px solid #10b981; border-radius: 0 8px 8px 0; color: #166534;"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>$1</div>');
+    formatted = formatted.replace(/^❌ (.+)$/gm, '<div style="margin: 0.25rem 0; padding: 0.5rem 1rem; background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 0 8px 8px 0; color: #991b1b;"><i class="fas fa-times-circle" style="margin-right: 0.5rem;"></i>$1</div>');
+    formatted = formatted.replace(/^🔥 (.+)$/gm, '<div style="margin: 0.25rem 0; padding: 0.5rem 1rem; background: #fff7ed; border-left: 4px solid #f59e0b; border-radius: 0 8px 8px 0; color: #92400e;"><i class="fas fa-fire" style="margin-right: 0.5rem;"></i>$1</div>');
+    formatted = formatted.replace(/^⚠️ (.+)$/gm, '<div style="margin: 0.25rem 0; padding: 0.5rem 1rem; background: #fef3c7; border-left: 4px solid #eab308; border-radius: 0 8px 8px 0; color: #854d0e;"><i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>$1</div>');
+    formatted = formatted.replace(/^💡 (.+)$/gm, '<div style="margin: 0.25rem 0; padding: 0.5rem 1rem; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 0 8px 8px 0; color: #1e40af;"><i class="fas fa-lightbulb" style="margin-right: 0.5rem;"></i>$1</div>');
     
     return formatted;
 }
+
+// 🔥 輔助函數：HTML 跳脫
+escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// 🔥 輔助函數：表格格式化
+formatMarkdownTable(text) {
+    // 偵測 Markdown 表格格式
+    const tableRegex = /(\|.+\|\n)+/g;
+    
+    return text.replace(tableRegex, (match) => {
+        const rows = match.trim().split('\n');
+        if (rows.length < 2) return match;
+        
+        // 解析表頭
+        const headers = rows[0].split('|').map(h => h.trim()).filter(h => h);
+        
+        // 跳過分隔線
+        const dataRows = rows.slice(2);
+        
+        let table = '<table style="width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9em;">';
+        
+        // 表頭
+        table += '<thead><tr style="background: linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%); color: white;">';
+        headers.forEach(header => {
+            table += `<th style="padding: 0.75rem; text-align: left; border: 1px solid #e2e8f0; font-weight: 600;">${header}</th>`;
+        });
+        table += '</tr></thead>';
+        
+        // 表格內容
+        table += '<tbody>';
+        dataRows.forEach((row, index) => {
+            const cells = row.split('|').map(c => c.trim()).filter(c => c);
+            const bgColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+            table += `<tr style="background: ${bgColor};">`;
+            cells.forEach(cell => {
+                table += `<td style="padding: 0.75rem; border: 1px solid #e2e8f0; color: #374151;">${cell}</td>`;
+            });
+            table += '</tr>';
+        });
+        table += '</tbody></table>';
+        
+        return table;
+    });
+}
+
 
 
 // 前往路線規劃頁面
@@ -8007,14 +8168,17 @@ showOrderAnalysisModal(time, content) {
     const contentElement = document.getElementById('orderAnalysisContent');
     
     if (!modal) {
-        // 如果模態視窗不存在，動態創建
         this.createOrderAnalysisModal();
         return this.showOrderAnalysisModal(time, content);
     }
     
     // 設置內容
     if (timeElement) timeElement.textContent = time;
-    if (contentElement) contentElement.textContent = content;
+    
+    // 🔥 修改這裡：使用 innerHTML 並套用 Markdown 格式化
+    if (contentElement) {
+        contentElement.innerHTML = this.formatChatMessage(content);
+    }
     
     // 顯示模態視窗
     modal.style.display = 'flex';
@@ -8029,6 +8193,7 @@ showOrderAnalysisModal(time, content) {
         }
     }, 50);
 }
+
 
 /**
  * 動態創建訂單分析模態視窗
