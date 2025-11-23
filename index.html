@@ -7998,19 +7998,12 @@ formatOrderTime(timeValue) {
     }
 }
 
-/**
- * 顯示訂單分析模態視窗
- */
-/**
- * 顯示訂單分析模態視窗
- */
 showOrderAnalysisModal(time, content) {
     const modal = document.getElementById('orderAnalysisModal');
     const timeElement = document.getElementById('orderAnalysisTime');
     const contentElement = document.getElementById('orderAnalysisContent');
     
     if (!modal) {
-        // 如果模態視窗不存在，動態創建
         this.createOrderAnalysisModal();
         return this.showOrderAnalysisModal(time, content);
     }
@@ -8018,14 +8011,12 @@ showOrderAnalysisModal(time, content) {
     // 設置內容
     if (timeElement) timeElement.textContent = time;
     
-    // 🔥 修改：使用 renderMarkdown 渲染內容
+    // 🔥 關鍵：使用 innerHTML + renderMarkdown
     if (contentElement) {
         try {
-            // 使用 this.renderMarkdown 渲染 Markdown
             contentElement.innerHTML = this.renderMarkdown(content);
         } catch (error) {
             console.error('Markdown 渲染錯誤:', error);
-            // 降級處理：直接顯示純文字
             contentElement.textContent = content;
         }
     }
@@ -8034,7 +8025,6 @@ showOrderAnalysisModal(time, content) {
     modal.style.display = 'flex';
     modal.classList.add('show');
     
-    // 添加動畫效果
     setTimeout(() => {
         const modalContent = modal.querySelector('.modal-content');
         if (modalContent) {
@@ -8043,6 +8033,7 @@ showOrderAnalysisModal(time, content) {
         }
     }, 50);
 }
+
 
 
 /**
@@ -8167,6 +8158,7 @@ createOrderAnalysisModal() {
         <p>載入中...</p>
     </div>
 </div>
+
 
                 <div class="modal-footer" style="
                     padding: 1.5rem 2.5rem 2.5rem;
@@ -10094,7 +10086,7 @@ async showGAISecretaryModal() {
 }
 
 
-// 隱藏GAI派車中心數位主任<br>Lisa對話框
+
 // 隱藏GAI派車中心數位主任<br>Lisa對話框
 hideGAISecretaryModal() {
     const modal = document.getElementById('gaiSecretaryModal');
