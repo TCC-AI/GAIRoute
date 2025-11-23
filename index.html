@@ -8228,9 +8228,6 @@ formatOrderTime(timeValue) {
     }
 }
 
-/**
- * 顯示訂單分析模態視窗
- */
 showOrderAnalysisModal(time, content) {
     const modal = document.getElementById('orderAnalysisModal');
     const timeElement = document.getElementById('orderAnalysisTime');
@@ -8241,19 +8238,47 @@ showOrderAnalysisModal(time, content) {
         return this.showOrderAnalysisModal(time, content);
     }
     
-    // 設置內容
+    // 設置時間
     if (timeElement) timeElement.textContent = time;
     
-    // 🔥 修改這裡：使用 innerHTML 並套用 Markdown 格式化
+    // 🔥 計算統計數據
+    const stats = this.calculateOrderStats(content);
+    
+    // 🔥 格式化內容並添加統計摘要
     if (contentElement) {
-        contentElement.innerHTML = this.formatChatMessage(content);
+        let formattedContent = this.formatChatMessage(content);
+        
+        // 如果有訂單數據，在頂部添加統計卡片
+        if (stats.totalOrders > 0) {
+            const statsCard = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 1.5rem; background: white; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 8px; color: white;">
+                        <i class="fas fa-shopping-cart" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                        <div style="font-size: 1.5rem; font-weight: 700;">${stats.totalOrders}</div>
+                        <div style="font-size: 0.85rem; opacity: 0.9;">筆訂單</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px; color: white;">
+                        <i class="fas fa-pallet" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                        <div style="font-size: 1.5rem; font-weight: 700;">${stats.totalCargo}</div>
+                        <div style="font-size: 0.85rem; opacity: 0.9;">板貨物</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 8px; color: white;">
+                        <i class="fas fa-chart-line" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                        <div style="font-size: 1.5rem; font-weight: 700;">${stats.avgCargo}</div>
+                        <div style="font-size: 0.85rem; opacity: 0.9;">平均板數</div>
+                    </div>
+                </div>
+            `;
+            formattedContent = statsCard + formattedContent;
+        }
+        
+        contentElement.innerHTML = formattedContent;
     }
     
     // 顯示模態視窗
     modal.style.display = 'flex';
     modal.classList.add('show');
     
-    // 添加動畫效果
     setTimeout(() => {
         const modalContent = modal.querySelector('.modal-content');
         if (modalContent) {
@@ -8262,6 +8287,34 @@ showOrderAnalysisModal(time, content) {
         }
     }, 50);
 }
+
+// 🔥 新增：計算訂單統計
+calculateOrderStats(content) {
+    const stats = {
+        totalOrders: 0,
+        totalCargo: 0,
+        avgCargo: 0
+    };
+    
+    // 匹配「客戶名 貨物XX板」格式
+    const matches = content.match(/^[^\s]+\s+貨物(\d+)板$/gm);
+    
+    if (matches) {
+        stats.totalOrders = matches.length;
+        
+        matches.forEach(match => {
+            const number = match.match(/\d+/);
+            if (number) {
+                stats.totalCargo += parseInt(number[0]);
+            }
+        });
+        
+        stats.avgCargo = Math.round(stats.totalCargo / stats.totalOrders);
+    }
+    
+    return stats;
+}
+
 
 
 /**
