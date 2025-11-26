@@ -5235,7 +5235,7 @@ function initCarbonChart() {
                     position: 'left',
                     title: {
                         display: true,
-                        text: '碳排量 (公斤/噸)-工時(小時)',
+                        text: '碳排量 (公斤/噸)-節省工時(小時)',
                         font: {
                             family: 'Inter',
                             size: 13,
@@ -5417,7 +5417,7 @@ function updateCarbonChart(data) {
             borderWidth: 2,
             tension: 0.4,
             yAxisID: 'yLeft',
-            unit: '小時'
+            unit: '(省)小時'
         },
         {
             label: '託收托運GAI',
@@ -5623,7 +5623,7 @@ function addPredictionToChart(days = 7) {
     const predictionDatasets = [];
     const datasetConfigs = [
         { index: 0, name: '派車GAI', color: '#0ea5e9', yAxisID: 'yLeft', unit: '公噸' },
-        { index: 1, name: '運務GAI', color: '#10b981', yAxisID: 'yLeft', unit: '小時' },
+        { index: 1, name: '運務GAI', color: '#10b981', yAxisID: 'yLeft', unit: '(省)小時' },
         { index: 2, name: '託收托運GAI', color: '#f59e0b', yAxisID: 'yLeft', unit: '公斤' },
         { index: 3, name: '營業額', color: '#ef4444', yAxisID: 'yRight', unit: '元' }
     ];
