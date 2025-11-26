@@ -4952,12 +4952,12 @@ function showDataStatistics() {
                                     <i class="fas fa-circle"></i> 運務GAI
                                 </span>
                             </td>
-                            <td>${operationStats.total.toFixed(2)} kg</td>
-                            <td>${operationStats.avg.toFixed(2)} kg</td>
-                            <td>${operationStats.max.toFixed(2)} kg</td>
-                            <td>${operationStats.min.toFixed(2)} kg</td>
+                            <td>${operationStats.total.toFixed(2)} hr</td>
+                            <td>${operationStats.avg.toFixed(2)} hr</td>
+                            <td>${operationStats.max.toFixed(2)} hr</td>
+                            <td>${operationStats.min.toFixed(2)} hr</td>
                             <td>${operationStats.stdDev.toFixed(2)}</td>
-                            <td>${operationStats.median.toFixed(2)} kg</td>
+                            <td>${operationStats.median.toFixed(2)} hr</td>
                             <td class="${operationStats.growth >= 0 ? 'growth-positive' : 'growth-negative'}">
                                 ${operationStats.growth >= 0 ? '↑' : '↓'} ${Math.abs(operationStats.growth).toFixed(2)}%
                             </td>
