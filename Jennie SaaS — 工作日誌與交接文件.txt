@@ -1,0 +1,656 @@
+﻿Jennie SaaS — 工作日誌與交接文件
+這份文件是給 Claude Code 的「交接日誌」。 每個 session 開始時會自動讀取這份文件，讓你快速了解專案現況。 請在每次 session 結束前更新此文件。
+________________
+
+
+專案概述
+珍妮 AI（Jennie AI） 是一個 SaaS 平台，讓使用者上傳自己的資料檔（CSV/Excel/PDF/DOCX/PPTX）， 透過自然語言與 AI 助理對話來查詢和分析資料。支援多種人格（persona）和語音互動。
+* 前端：HTML/CSS/JS（PWA），部署於 Vercel
+* 後端：Python FastAPI，部署於 Railway（Docker）
+* 資料庫：Supabase PostgreSQL（Production）/ SQLite（Development）
+* 向量資料庫：Pinecone（RAG 語義搜尋）
+* AI：Google Gemini 2.5 Flash（LLM）+ Gemini Embeddings、OpenAI / Edge-TTS（語音）
+* 支付：Stripe（國際信用卡 USD）— 支付寶 Antom（Phase 3 計畫中）
+________________
+
+
+【YJ標準架構-01】— SaaS 標準化模組規格
+用途 — 日後建構新 SaaS 系統時，只要說「用【YJ標準架構-01】來架構 XXX」， Claude Code 就知道要用以下完整的基礎設施、後台管理系統、安全機制、CI/CD 流程來搭建。
+一、硬體基礎設施（6 大平台）
+平台
+	角色
+	職責
+	月費
+	Railway
+	後端主機
+	Docker 容器運行 FastAPI，Uvicorn 多 Worker
+	~$5-20
+	Vercel
+	前端主機
+	靜態 HTML/CSS/JS 託管，自動 HTTPS + CDN
+	Free
+	Supabase
+	資料庫 + 檔案儲存
+	PostgreSQL + Storage（檔案備份）+ PITR 災難復原
+	Free~$25
+	Pinecone
+	向量資料庫
+	RAG 語義搜尋，文件 embedding 儲存與查詢（Serverless）
+	Free~$70
+	GitHub
+	版控 + CI/CD + 備份
+	程式碼管理、自動備份排程、健康檢查、災難復原
+	Free
+	Sentry
+	錯誤追蹤
+	後端未捕獲例外自動上報 + email 告警
+	Free
+	輔助服務：
+服務
+	角色
+	說明
+	Resend
+	Email 發送
+	Welcome / 額度警告 / 到期提醒 / 沉睡召回 / 驗證信 / 週報
+	Stripe
+	支付
+	國際信用卡 USD，月/年訂閱 + 升降級 + 計費切換
+	Google Cloud
+	AI + OAuth
+	Gemini LLM/Embeddings + Google 登入
+	Hostinger
+	網域
+	DNS 管理
+	架構拓撲：
+使用者瀏覽器
+    │
+    ├── 前端頁面 ──── Vercel（靜態託管 + CDN）
+    │                    │ API 呼叫（CORS）
+    │                    ▼
+    └── 後端 API ──── Railway（Docker + Uvicorn 多 Worker）
+                        │
+            ┌───────────┼───────────────┐
+            ▼           ▼               ▼
+       Supabase     Pinecone      Google Gemini
+       (DB+Storage)  (向量搜尋)     (AI 推論)
+
+
+    監控層：GitHub Actions（排程）+ Sentry（錯誤追蹤）
+    通訊層：Resend（Email）
+    支付層：Stripe
+
+
+二、後端技術棧
+元件
+	技術
+	說明
+	框架
+	FastAPI
+	非同步、自動 OpenAPI 文件
+	執行
+	Uvicorn
+	--workers 2（多 Worker）
+	ORM
+	SQLAlchemy (async)
+	AsyncSessionLocal，支援 PostgreSQL + SQLite
+	認證
+	JWT + Google OAuth 2.0
+	7 天過期、帳號鎖定（5 次失敗鎖 15 分鐘）
+	Rate Limit
+	SlowAPI
+	每端點可設定次/分鐘
+	容器
+	Docker
+	單一 Dockerfile，Railway 自動部署
+	測試
+	pytest + pytest-asyncio
+	SQLite 測試 DB，asyncio_mode=auto
+	Router 模組化架構（main.py 僅負責 app 初始化 + router 註冊）：
+Router
+	職責
+	auth.py
+	認證（register/login/google/verify-email/me）
+	chat.py
+	聊天（chat/stream/history/tts）
+	subscription.py
+	訂閱（plans/checkout/webhook/upgrade/downgrade/billing-switch）
+	files.py
+	檔案上傳管理
+	settings.py
+	用戶設定
+	admin.py
+	管理後台全部端點
+	enterprise.py
+	企業版 VIP
+	engagement.py
+	黏力功能（里程碑/每日一句/主動關懷/打卡/書籤/推薦）
+	content.py
+	公告/用量/Prompt 範本
+	bookkeeping.py
+	記帳功能
+	feedback.py
+	意見回饋
+	health.py
+	健康檢查
+	static_files.py
+	靜態檔案（必須最後註冊，含 catch-all / 路由）
+	共用模組：
+模組
+	說明
+	shared.py
+	所有 helper 函數/常數（milestones, streak, persona 等）
+	dependencies.py
+	limiter 實例 + require_verified_email + require_admin 依賴注入
+	request_models.py
+	Pydantic 請求模型（避免 circular import）
+	enterprise_service.py
+	企業版邀請碼生成/兌換/團隊管理服務
+	三、前端技術棧
+元件
+	技術
+	說明
+	架構
+	純 HTML/CSS/JS（PWA）
+	無框架、無 build 步驟、直接部署靜態檔案
+	UI 庫
+	Font Awesome 6
+	圖示系統
+	Markdown
+	marked.js + DOMPurify
+	AI 回覆渲染 + XSS 防護
+	截圖
+	html2canvas
+	訊息截圖分享
+	中英切換
+	OpenCC
+	繁簡轉換
+	前端頁面結構（主應用 app.html）：
+頁面
+	說明
+	儀表板
+	快速操作卡片 + 訂閱資訊 + 打卡系統
+	技巧教學
+	19 個互動式教學（4 大類）+ 完成解鎖頭像 + 粉紅提示泡泡
+	功能解鎖一覽
+	頭像解鎖總覽（方案/連續登入/教學完成三種來源）+ 打卡獎勵表
+	我的檔案
+	拖放上傳 + 檔案列表 + 下載/刪除
+	設定
+	人設/性別/頭像/行業/部門/語言/週報/推薦碼
+	職業賦能
+	6 行業 × 9 職務 + Prompt 範本
+	對話紀錄
+	歷史對話按日期分組
+	收藏
+	書籤列表
+	記帳簿
+	快速記帳/摘要/圓餅圖/預算/CSV 匯出
+	用量統計
+	額度進度條/7 天趨勢
+	訂閱方案
+	方案比較卡片 + 企業版客製
+	意見回饋
+	回饋表單 + 管理回覆顯示
+	聊天 UI 元件：
+* FAB 浮動按鈕（可拖曳 + 磁力錨定）
+* 聊天視窗（SSE 串流 + 打字機效果 + Markdown 渲染）
+* @mention 檔案選取（輸入 @ 彈出檔案列表）
+* 工具列（複製/LINE 分享/微信分享/截圖/書籤）
+* 助理面板（桌面版全身照 + MP4 嘴型動畫）
+* 手機版聊天頭像影片（80px 圓形 MP4）
+* Prompt 範本面板（滑入式）
+四、管理後台系統（9 大模組）
+4.1 系統總覽儀表板
+元件
+	說明
+	6 張統計卡片
+	總用戶數/今日活躍/付費用戶/總提問/總檔案/本週新增
+	方案分佈圓餅圖
+	各訂閱方案用戶佔比
+	系統維護
+	Pinecone 向量重建按鈕 + 結果顯示
+	4.2 客戶管理
+元件
+	說明
+	用戶列表
+	搜尋 + 方案篩選 + 分頁
+	用戶詳情 Modal
+	訂閱資訊/用量進度條/檔案列表/手動驗證信箱
+	用量進度條
+	提問次數 + 檔案數量（依方案/計費顯示不同上限），三色警告（藍→黃→紅）
+	4.3 客戶洞察分析
+分析維度（7 個 Tab）
+	說明
+	登入頻率
+	最活躍用戶排行
+	提問量
+	重度使用者識別
+	在線時長
+	使用深度分析
+	檔案上傳
+	資料依賴度
+	參與度
+	綜合評分
+	升級潛力
+	最可能付費的免費用戶
+	沉睡用戶
+	需要召回的流失用戶
+	4.4 客戶喜好分析
+元件
+	說明
+	偏好分佈
+	人設/頭像/性別 當前選擇分佈
+	變更熱度
+	哪些設定最常被修改
+	頻繁變更用戶
+	決策困難 or 高探索性用戶
+	頭像排行
+	Top 20% 熱門頭像
+	趨勢分析
+	用戶切換的方向（從 X 切到 Y）
+	近期變更日誌
+	時間軸逐筆列出
+	4.5 企業版管理
+元件
+	說明
+	企業訂單列表
+	購買者/方案/帳號數/金額/狀態
+	VIP 帳號管理
+	啟用/停用/重設密碼/登入統計
+	狀態篩選
+	依啟用/停用過濾
+	4.6 客戶回饋系統
+元件
+	說明
+	4 張統計卡片
+	總數/待處理/已回覆/已關閉
+	分類統計圖
+	功能建議/Bug 回報/一般回饋
+	回饋列表
+	搜尋 + 狀態篩選 + 分頁
+	回覆 Modal
+	查看原始回饋 + 回覆文字區 + 關閉/歸檔
+	截圖附件
+	用戶可附截圖，縮圖預覽 + 點擊放大
+	雙向通知
+	用戶送出→管理員登入 app 橘色彈窗提醒；管理員回覆→用戶登入 app 紫色彈窗顯示回覆內容 + 已讀追蹤
+	4.7 公告管理系統
+元件
+	說明
+	發布表單
+	標題/內容(Markdown)/對象類型/到期日
+	發布對象
+	全站(all)/付費用戶(paid)/指定方案(tier)/指定個人(individual)
+	公告列表
+	標題/對象/已讀數/到期日/建立時間/刪除
+	用戶端
+	登入後自動彈窗未讀公告 + 已讀回報
+	4.8 金流查核系統
+元件
+	說明
+	5 個 Tab
+	總覽 / 訂閱歷程 / 月帳冊 / 企業訂單 / 扣抵管理
+	8 個 KPI 卡片
+	MRR / ARR / ARPU / LTV / 付費用戶 / 免費轉付費率 / 成長率 / 付費失敗率
+	KPI 計算明細
+	點擊展開公式 + 每 tier/billing 細項表格
+	營收趨勢圖
+	純 CSS 長條圖（day/week/month）
+	訂閱歷程
+	分頁 + 事件類型/日期篩選 + 16 種彩色標籤
+	月帳冊
+	按月逐筆金流 + 月度統計摘要
+	扣抵管理
+	新增扣抵/補貼/退款 + 歷史記錄
+	匯出功能
+	Excel 下載 + Google Sheet
+	歷史回填
+	一鍵補回 subscription_events 建立前的資料
+	16 種事件類型
+	checkout/upgrade/downgrade/cancel/renew/payment_failed/billing_switch/credit/debit/refund/poc_change/referral_trial/referral_bonus/downgrade_scheduled/billing_switch_scheduled/enterprise_checkout
+	KPI 計算公式：
+MRR = Σ(月訂閱: price_monthly × 人數) + Σ(年訂閱: price_yearly ÷ 12 × 人數)
+ARR = MRR × 12
+ARPU = MRR ÷ 付費用戶數
+LTV = ARPU ÷ 月流失率（流失率=0 → LTV=ARPU×24）
+成長率 = (本月 MRR - 上月 MRR) ÷ 上月 MRR
+付費失敗率 = 失敗事件 ÷ (成功+失敗)事件
+下月預測 = MRR × (1 + 成長率)
+
+
+4.9 稽核日誌系統
+元件
+	說明
+	稽核日誌表
+	AuditLogModel 記錄管理員操作（admin_id/action/resource_type/resource_id/details/ip）
+	8 種操作追蹤
+	更新用戶/驗證信箱/重設密碼/啟停VIP/備份匯出/加密備份/向量重建/扣抵補貼
+	查詢介面
+	篩選列（操作類型/資源類型/日期）+ 表格 + 分頁
+	五、安全機制
+層級
+	機制
+	說明
+	XSS 防護
+	DOMPurify
+	白名單式 ALLOWED_TAGS/ATTR 消毒 AI 回應
+	Response Headers
+	CSP/HSTS/X-Frame/nosniff
+	Security Headers Middleware
+	帳號鎖定
+	5 次失敗 → 鎖 15 分鐘
+	成功登入自動重置，email 大小寫統一比對
+	Email 驗證
+	一次性 token + 24 小時有效
+	未驗證帳號前端白紗遮罩 + 後端 403
+	備份加密
+	AES-256-GCM
+	PBKDF2-SHA256, 480K iterations
+	Rate Limiting
+	SlowAPI
+	每端點獨立設定（含 OAuth/verify-email/persona/rebuild）
+	CORS
+	白名單 origins
+	Production 不開放 localhost，開發環境限定
+	JWT
+	HS256 + 7 天過期
+	Production 未設 JWT_SECRET_KEY 拒絕啟動
+	SSRF 防護
+	hostname 白名單
+	Google Sheets 匯入僅允許 docs.google.com
+	反女巫攻擊
+	帳齡門檻
+	Referral 推薦人 7 天 + 被推薦人 1 天
+	輸入長度限制
+	Pydantic max_length
+	ChatRequest 10000 / Feedback 5000 / TTS 5000
+	稽核日誌
+	AuditLogModel
+	管理員 8 種敏感操作自動記錄
+	六、CI/CD 與自動化（GitHub Actions）
+Job
+	觸發
+	說明
+	test
+	push/PR 到 main（backend/**）
+	pytest 全套測試
+	health-check
+	每 30 分鐘 cron
+	健康檢查 + 3 次重試 + 自動 Railway redeploy（1 小時冷卻期）
+	backup
+	每日 cron
+	DB 匯出 → 加密 → GitHub Artifacts（90 天保留）
+	verify-backup
+	backup 完成後
+	驗證備份完整性
+	email-lifecycle
+	每日 cron
+	到期提醒 + 沉睡用戶召回
+	weekly-report
+	每週一 cron
+	個人化 Email 週報
+	memory-compress-weekly
+	每週一 cron
+	短期記憶 → 中期壓縮
+	memory-compress-monthly
+	每月 1 號 cron
+	中期記憶 → 長期壓縮
+	rebuild-embeddings
+	手動 dispatch
+	Pinecone 向量全量重建
+	自動復原流程：
+健康檢查失敗 → 重試 2 次（30 秒間隔）→ 3 次都失敗
+  → 冷卻期內？→ 告警「需人工介入」
+  → 未在冷卻期 → Railway API redeploy → 等 2 分鐘 → 驗證 3 次
+    → 成功 → 告警「✅ 自動重啟成功」
+    → 失敗 → 告警「🚨 需人工介入」
+
+
+七、訂閱方案架構
+層級
+	方案
+	計費
+	Free
+	免費版
+	—
+	Standard
+	標準版
+	月付/年付
+	Pro
+	專業版
+	月付/年付
+	Enterprise-Standard
+	企業標準版
+	月付/年付
+	Enterprise-Pro
+	企業專業版
+	月付/年付
+	升降級機制：
+* 升級：立即生效（取消舊訂閱 + 新 Checkout）
+* 降級：到期後生效（pending_downgrade_tier + cancel_at_period_end）
+* 計費切換：到期後切換（pending_billing_period，登入時自動套用）
+定義位置：tier_config.py（source of truth），每方案含：
+* name、max_files、daily_questions、total_questions（免費版）
+* allowed_personas、allowed_industries、allowed_departments
+* price_monthly、price_yearly
+八、黏力/留存功能模組
+功能
+	說明
+	成本
+	使用里程碑
+	10/50/100/200/500/1000 次提問慶祝動畫
+	$0
+	每日一句
+	12 人格 × 7 句，MD5 hash deterministic
+	$0
+	AI 主動關懷
+	讀取記憶摘要 → Gemini 生成關懷語（每天最多 3 次）
+	~$0.0003/次
+	人格養成解鎖
+	累計提問達標 → 解鎖新人設 + 5 次免費體驗
+	$0
+	連續登入打卡
+	3/7/14/30 天獎勵人設體驗次數
+	$0
+	對話收藏書籤
+	收藏有價值的 AI 回覆
+	$0
+	Referral 推薦
+	雙方各得 7 天 Pro 體驗
+	$0
+	Prompt 範本
+	6 行業 × 9 職務 × 6-8 個 = 107 個範本
+	$0
+	每週使用報告
+	Email 週報（統計 + AI 亮點）
+	~$0.0003/用戶
+	分層記憶系統
+	short 7天 / mid 30天 / long 90天
+	~$0.0003/壓縮
+	技巧教學系統
+	19 個互動式 Spotlight 教學（4 類），完成整類解鎖專屬頭像
+	$0
+	功能解鎖一覽
+	頭像解鎖總覽頁（方案解鎖/連續登入解鎖/教學完成解鎖）
+	$0
+	連續登入解鎖頭像
+	7/14/30/60 天連續登入各解鎖 1 張專屬頭像
+	$0
+	九、資料庫模型清單
+Model
+	表名
+	說明
+	UserModel
+	users
+	用戶主表（認證/訂閱/設定/打卡/推薦/記憶）
+	ChatMessageModel
+	chat_messages
+	聊天記錄
+	FileModel
+	files
+	上傳檔案記錄
+	ChunkModel
+	chunks
+	RAG 分段記錄
+	UserMemoryModel
+	user_memories
+	短期記憶摘要（舊版，向後相容）
+	UserMemoryLayerModel
+	user_memory_layers
+	分層記憶（short/mid/long）
+	EnterpriseOrderModel
+	enterprise_orders
+	企業版訂單
+	EnterpriseAccountModel
+	enterprise_accounts
+	企業版 VIP 帳號（舊版，向後相容）
+	EnterpriseInviteCodeModel
+	enterprise_invite_codes
+	企業版邀請碼
+	BookmarkModel
+	bookmarks
+	對話收藏
+	ReferralModel
+	referrals
+	推薦記錄
+	PreferenceLogModel
+	preference_logs
+	用戶偏好變更日誌
+	AnnouncementModel
+	announcements
+	系統公告
+	AnnouncementReadModel
+	announcement_reads
+	公告已讀記錄
+	FeedbackModel
+	feedbacks
+	用戶回饋
+	TransactionModel
+	transactions
+	記帳交易
+	BudgetModel
+	budgets
+	記帳預算
+	SubscriptionEventModel
+	subscription_events
+	金流事件（金流查核核心）
+	AdminCreditModel
+	admin_credits
+	管理員扣抵/補貼
+	AuditLogModel
+	audit_logs
+	管理員操作稽核日誌
+	十、Email 生命週期觸達
+類型
+	觸發時機
+	說明
+	Welcome
+	註冊成功
+	歡迎信
+	Verification
+	註冊後
+	Email 驗證信（24 小時有效）
+	Quota Warning
+	額度 ≤ 5 次（付費）/ ≤ 3 次（免費）
+	提醒升級
+	Expiration
+	到期前 7 天 / 1 天
+	續費提醒
+	Dormant
+	7 天未登入
+	召回信
+	Weekly Report
+	每週一
+	個人化統計 + AI 亮點
+	十一、災難復原鏈
+DB 備份（每日 GitHub Artifacts，90 天保留）
+  + Supabase PITR（7 天時間點還原）
+  + 原始檔案（Supabase Storage）
+    → 資料庫還原：Artifacts 匯入 or PITR 回溯
+    → 向量重建：POST /api/admin/rebuild-embeddings
+    → 系統完全恢復
+
+
+十二、使用方式
+日後建構新 SaaS 系統時，對 Claude Code 說：
+「用【YJ標準架構-01】來架構 XXX 系統」
+Claude Code 會自動套用以上全部規格，包含：
+1. Railway + Vercel + Supabase + Pinecone + GitHub + Sentry 六大平台架構
+2. FastAPI Router 模組化後端 + 純 HTML/CSS/JS 前端
+3. 管理後台 8 大模組（儀表板/客戶管理/洞察/喜好/企業/回饋/公告/金流）
+4. JWT + Google OAuth + Email 驗證 + 帳號鎖定 安全機制
+5. Stripe 訂閱 + 升降級 + 計費切換 支付體系
+6. GitHub Actions CI/CD + 自動備份 + 健康檢查 + 自動復原
+7. 黏力功能全套（里程碑/養成/打卡/書籤/推薦/週報/記憶）
+8. 金流查核全面追蹤（16 種事件、8 個 KPI、歷史回填）
+9. 互動式技巧教學系統（19 個 Spotlight 教學 × 4 分類 + 完成解鎖頭像）
+10. 功能解鎖一覽頁（方案/連續登入/教學完成 三種頭像解鎖來源透明展示）
+________________
+
+
+目錄結構速查
+backend/
+  main.py            — FastAPI 入口點（424 行，僅 app 初始化 + router 註冊）
+  shared.py          — 共用 helper 函數/常數（milestones, streak, persona, build_user_response 等）
+  dependencies.py    — 共用依賴注入（limiter, _user_billing, require_verified_email, require_admin）
+  request_models.py  — 16 個 Pydantic 請求模型
+  database.py        — SQLAlchemy 模型與資料庫操作
+  rag.py             — Pinecone RAG 服務
+  ai_service.py      — AI/TTS 服務整合
+  backup_service.py  — 備份與災難復原
+  tier_config.py     — 訂閱方案定義
+  stripe_service.py  — Stripe 支付整合
+  # ecpay_service.py 已刪除（2026-03-03 Phase 1 移除 ECPay）
+  auth.py            — JWT + Google OAuth 認證
+  enterprise_service.py — 企業版邀請碼/團隊管理服務
+  email_service.py   — Email 生命週期行銷（Resend）
+  memory_service.py  — 分層記憶系統（short/mid/long）
+  prompt_templates.py — 107 個 Prompt 範本
+  models.py          — Pydantic 資料模型
+  pytest.ini         — pytest 設定（asyncio_mode=auto）
+  routers/
+    __init__.py        — Router package
+    health.py          — 健康檢查 3 端點（156 行）
+    auth.py            — 認證 8 端點：register/login/google/verify-email/resend/me（378 行）
+    chat.py            — 聊天 4 端點：chat/stream/history/tts（486 行）
+    subscription.py    — 訂閱 17 端點：Stripe checkout/webhook/upgrade/downgrade/billing-switch + plans（703 行）
+    files.py           — 檔案上傳管理 11 端點（820 行）
+    settings.py        — 用戶設定 6 端點（277 行）
+    admin.py           — 管理後台 38 端點（含金流查核 12 端點 + 稽核日誌）（1514 行）
+    enterprise.py      — 企業版邀請碼/團隊管理 6 端點（354 行）
+    engagement.py      — 里程碑/每日一句/主動關懷/打卡/書籤/推薦/技巧教學完成/教學進度 13 端點（~850 行）
+    content.py         — 公告/用量/Prompt 範本 4 端點（345 行）
+    bookkeeping.py     — 記帳功能 11 端點：手動/批量/AI記帳/摘要/預算/登入洞察/CSV匯出 + 聊天整合（888 行）
+    feedback.py        — 意見回饋 6 端點（283 行）
+    static_files.py    — 靜態檔案/前端頁面 2 端點（68 行）
+  tests/
+    conftest.py                — 測試基礎設施（SQLite 測試 DB + fixtures）
+    test_tier_config.py        — 方案限制純邏輯測試（56 tests）
+    test_auth.py               — 認證迴歸測試（23 tests）
+    test_subscription.py       — 訂閱 API smoke test（14 tests）
+    test_persona_unlock.py     — 養成系統測試（35 tests）
+    test_plan_switching.py     — 方案升降級全路徑測試（59 tests）
+    test_rag_chunking.py       — RAG 資料分段測試（39 tests）
+    test_payment_and_features.py — 支付整合與邊界條件（24 tests）
+    test_milestone.py          — 里程碑與每日一句測試（21 tests）
+    test_persona_enforcement.py — 人設攔截測試（17 tests）
+    test_file_limits.py        — 檔案數量限制測試（14 tests）
+    test_quota_enforcement.py  — 額度執行測試（14 tests）
+    test_data_preservation.py  — 降級後資料完整性測試（10 tests）
+    test_stripe_webhook.py     — Stripe webhook 事件處理（8 tests）
+    test_admin_auth.py         — Admin 端點權限控制（8 tests）
+    test_build_user_response.py — build_user_response 跨方案完整性（5 tests）
+    test_bookkeeping.py        — 記帳功能測試（34 tests）
+    test_billing_switch.py     — 計費週期切換測試（25 tests）
+    test_upgrade_downgrade.py  — 方案升降級測試（24 tests）
+
+
+frontend/
+  app.html         — 主聊天應用
+  admin.html       — 管理後台
+  index.html       — Landing Page
+  js/app.js        — 主應用邏輯
+  js/admin.js      — 管理後台邏輯
+  privacy.html     — 隱私權政策頁面
+  terms.html       — 服務條款頁面
+  css/styles.css   — 主樣式檔（注意：曾嘗試改名為 app.css 但已 revert）
